@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ===== MODO DÍA (claro) ===== -->
+    <color name="background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_high">#F1F5F9</color>
+    <color name="glass_surface">#E6FFFFFF</color>
+    <color name="glass_surface_high">#F2FFFFFF</color>
+    <color name="glass_card">#E6FFFFFF</color>
+    <color name="glass_stroke">#1F000000</color>
+    <color name="glass_highlight">#0A000000</color>
+    <color name="primary">#FF0033</color>
+    <color name="primary_soft">#33FF0033</color>
+    <color name="accent_secondary">#FF4D6D</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="text_primary">#111827</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="divider">#14000000</color>
+    <color name="sidebar_bg">#F8FAFC</color>
+    <color name="dot_online">#059669</color>
+    <color name="dot_offline">#B45309</color>
+
+    <!-- ===== Glass (iPhone) — translucidez esmerilada sobre wallpaper ===== -->
+    <color name="glass_sidebar">#B00F1420</color>
+    <color name="glass_panel">#CC1E2230</color>
+    <color name="glass_stroke_brighter">#66FFFFFF</color>
+    <color name="glass_wallpaper_start">#081426</color>
+    <color name="glass_wallpaper_center">#2A1A4E</color>
+    <color name="glass_wallpaper_end">#7A2452</color>
+    <color name="glass_highlight_soft">#1AFFFFFF</color>
+
+    <!-- ===== Paleta de acentos (misma en día/noche) ===== -->
+    <color name="accent_red">#FF0033</color>
+    <color name="accent_red_soft">#33FF0033</color>
+    <color name="accent_red_secondary">#FF4D6D</color>
+    <color name="accent_red_dark">#C9002B</color>
+
+    <color name="accent_orange">#FF6D00</color>
+    <color name="accent_orange_soft">#33FF6D00</color>
+    <color name="accent_orange_secondary">#FF9E40</color>
+    <color name="accent_orange_dark">#C65300</color>
+
+    <color name="accent_amber">#E89B00</color>
+    <color name="accent_amber_soft">#33E89B00</color>
+    <color name="accent_amber_secondary">#F0B43D</color>
+    <color name="accent_amber_dark">#B57A00</color>
+
+    <color name="accent_green">#00A047</color>
+    <color name="accent_green_soft">#3300A047</color>
+    <color name="accent_green_secondary">#2EBD6B</color>
+    <color name="accent_green_dark">#007A36</color>
+
+    <color name="accent_teal">#008F7A</color>
+    <color name="accent_teal_soft">#33008F7A</color>
+    <color name="accent_teal_secondary">#1FAB97</color>
+    <color name="accent_teal_dark">#006B5D</color>
+
+    <color name="accent_blue">#2979FF</color>
+    <color name="accent_blue_soft">#332979FF</color>
+    <color name="accent_blue_secondary">#5C8CFF</color>
+    <color name="accent_blue_dark">#1565C0</color>
+
+    <color name="accent_purple">#AA00FF</color>
+    <color name="accent_purple_soft">#33AA00FF</color>
+    <color name="accent_purple_secondary">#BB40FF</color>
+    <color name="accent_purple_dark">#7A00B8</color>
+
+    <color name="accent_pink">#D81B60</color>
+    <color name="accent_pink_soft">#33D81B60</color>
+    <color name="accent_pink_secondary">#E84A87</color>
+    <color name="accent_pink_dark">#A21246</color>
+</resources>

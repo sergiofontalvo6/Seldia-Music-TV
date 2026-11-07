@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Seldia Music</string>
+
+    <string name="nav_home">Inicio</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_library">Biblioteca</string>
+
+    <string name="home_greeting">Tu música</string>
+    <string name="home_subtitle">Escucha tus canciones favoritas</string>
+    <string name="action_offline">Sin conexión</string>
+    <string name="action_favorites">Favoritos</string>
+    <string name="action_playlists">Playlists</string>
+    <string name="recent_played">Reproducidos recientemente</string>
+    <string name="card_offline_subtitle">Dispositivo y descargas</string>
+
+    <plurals name="favorite_count">
+        <item quantity="one">%d canción</item>
+        <item quantity="other">%d canciones</item>
+    </plurals>
+    <plurals name="playlist_count">
+        <item quantity="one">%d playlist</item>
+        <item quantity="other">%d playlists</item>
+    </plurals>
+
+    <string name="offline_title">Sin conexión</string>
+    <string name="no_offline_music">Aún no tienes música sin conexión.\nDescarga canciones (solo audio) y aparecerán aquí.</string>
+    <string name="favorites">Favoritos</string>
+    <string name="no_favorites">Aún no tienes favoritos.</string>
+    <string name="history">Historial</string>
+    <string name="no_history">Aún no hay historial de reproducción.</string>
+    <string name="playlists">Playlists</string>
+    <string name="youtube">YouTube</string>
+
+    <!-- Sidebar (desktop) -->
+    <string name="sidebar_library">Biblioteca</string>
+    <string name="lists">Listas</string>
+    <string name="albums">Álbumes</string>
+    <string name="artists">Artistas</string>
+    <string name="online_status">En línea</string>
+    <string name="offline_status">Sin conexión</string>
+    <string name="liked_songs_title">Canciones que te gustan</string>
+    <string name="liked_count">%d canciones</string>
+    <string name="new_playlist">Nueva playlist</string>
+    <string name="auto_download_title">Auto-descarga</string>
+    <string name="auto_download_subtitle">Solo audio (M4A) · ahorra espacio</string>
+    <string name="auto_download_enabled">Auto-descarga activada (solo audio)</string>
+    <string name="auto_download_disabled">Auto-descarga desactivada</string>
+
+    <!-- Tabla de pistas -->
+    <string name="table_col_title">Título</string>
+    <string name="table_col_album">Álbum</string>
+    <string name="table_col_date">Fecha</string>
+    <string name="table_col_duration">Dur.</string>
+    <string name="play_all">Reproducir</string>
+    <string name="shuffle_all">Mezclar</string>
+    <string name="add_all">Añadir</string>
+    <string name="tracks_meta">%1$d pistas · %2$s</string>
+    <string name="added_to_queue_count">%d pistas añadidas a la cola</string>
+    <string name="kicker_playlist">Playlist</string>
+    <string name="kicker_favorites">Favoritos</string>
+    <string name="kicker_album">Álbum</string>
+    <string name="kicker_artist">Artista</string>
+    <string name="kicker_library">Biblioteca</string>
+    <string name="empty_playlist">Playlist vacía.\nAñade canciones con el menú ⋮ de cada pista.</string>
+    <string name="empty_group_offline">No hay pistas offline en este grupo.</string>
+    <string name="groups_offline_subtitle">Biblioteca offline · dispositivo y descargas</string>
+    <string name="empty_groups_offline">Sin pistas en tu biblioteca offline.</string>
+
+    <string name="add_to_queue">Añadir a la cola</string>
+    <string name="add_to_playlist">Añadir a playlist</string>
+    <string name="add_favorite">Añadir a favoritos</string>
+    <string name="remove_favorite">Quitar de favoritos</string>
+    <string name="remove_from_playlist">Quitar de la playlist</string>
+    <string name="download_track">Descargar</string>
+    <string name="rename">Renombrar</string>
+    <string name="delete">Eliminar</string>
+    <string name="clear">Borrar</string>
+
+    <string name="confirm_delete_playlist">¿Eliminar la playlist "%1$s"?</string>
+    <string name="clear_history">Borrar historial</string>
+    <string name="confirm_clear_history">¿Borrar todo el historial de reproducción?</string>
+
+    <string name="nothing_playing">Nada en reproducción</string>
+    <string name="queue_empty">La cola está vacía</string>
+    <string name="queue_count">%1$d pistas en cola</string>
+
+    <string name="search_hint">Buscar en YouTube o en tu biblioteca…</string>
+    <string name="search_empty">Busca canciones o artistas.\nSin conexión se buscará en tu biblioteca offline.</string>
+    <string name="search_offline_notice">Sin conexión · Resultados offline</string>
+    <string name="voice_search">Búsqueda por voz</string>
+    <string name="mode_audio">Audio</string>
+    <string name="mode_video">Vídeo</string>
+    <string name="video_only_youtube">El vídeo solo está disponible para pistas de YouTube</string>
+    <string name="fullscreen">Pantalla completa</string>
+    <string name="fullscreen_exit">Salir de pantalla completa</string>
+    <string name="voice_prompt">Di el nombre de una canción o artista</string>
+    <string name="voice_unavailable">No hay reconocimiento de voz disponible en este dispositivo</string>
+    <string name="no_recent">No hay reproducciones recientes.</string>
+    <string name="no_playlists">No hay playlists todavía.\nCrea una con el botón +</string>
+
+    <!-- Sonando ahora (panel derecho) -->
+    <string name="now_playing_label">Sonando ahora</string>
+    <string name="source_chip_youtube">YouTube</string>
+    <string name="source_chip_offline">Sin conexión</string>
+
+    <!-- Letras (Lyrics) -->
+    <string name="lyrics_button">Letra</string>
+    <string name="lyrics_title">Letra de la canción</string>
+    <string name="lyrics_synced_badge">Karaoke · Sincronizada</string>
+    <string name="lyrics_loading">Buscando letra…</string>
+    <string name="lyrics_not_found">No se encontró la letra para esta pista.</string>
+    <string name="lyrics_no_track">Reproduce una canción para ver su letra.</string>
+
+    <!-- Descargas -->
+    <string name="download_starting">Descargando "%1$s" (solo audio)…</string>
+    <string name="download_enqueued">Descargando %1$s (solo audio)…</string>
+    <string name="download_already_local">Esta pista ya está en tu dispositivo.</string>
+    <string name="download_failed">No se pudo completar la descarga.</string>
+    <string name="download_saved">"%1$s" se guardó en tu música offline.</string>
+    <string name="download_permission_denied">Permiso de almacenamiento denegado. Actívalo para guardar el archivo.</string>
+    <string name="download_offline_audio_only">Sin conexión: se descargará solo el audio (M4A).</string>
+    <string name="download_offline_blocked">Sin conexión: no se puede descargar ahora. Se guardará solo audio cuando vuelvas a estar en línea.</string>
+    <string name="delete_offline">Eliminar de Sin conexión</string>
+    <string name="offline_delete_title">Eliminar descarga</string>
+    <string name="offline_delete_message">Se borrará el archivo "%1$s" y desaparecerá de tu biblioteca offline (favoritos, playlists e historial).</string>
+    <string name="offline_deleted">"%1$s" eliminada de Sin conexión</string>
+    <string name="offline_delete_failed">No se pudo eliminar el archivo.</string>
+
+    <plurals name="track_count">
+        <item quantity="one">%d pista</item>
+        <item quantity="other">%d pistas</item>
+    </plurals>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_general">Reproducción</string>
+    <string name="settings_auto_download">Auto-descarga (solo audio)</string>
+    <string name="settings_auto_download_desc">Guarda automáticamente las pistas al dar Me gusta</string>
+    <string name="settings_data">Copia de seguridad y datos</string>
+    <string name="settings_backup">Crear copia de seguridad</string>
+    <string name="settings_backup_desc">Exporta favoritos, historial, playlists y ajustes (JSON)</string>
+    <string name="settings_restore">Restaurar copia</string>
+    <string name="settings_restore_desc">Importa un archivo de copia de seguridad</string>
+    <string name="backup_done">Copia de seguridad creada</string>
+    <string name="backup_failed">No se pudo crear la copia</string>
+    <string name="restore_done">Copia restaurada correctamente</string>
+    <string name="restore_failed">No se pudo restaurar la copia</string>
+
+    <!-- Importar lista de Spotify -->
+    <string name="settings_spotify">Importar lista de Spotify</string>
+    <string name="settings_spotify_desc">Pega la URL pública de una playlist de Spotify para crearla en Mis Listas con sus canciones (YouTube).</string>
+    <string name="spotify_url_hint">https://open.spotify.com/playlist/…</string>
+    <string name="spotify_import">Importar</string>
+    <string name="spotify_importing">Importando… %1$d/%2$d</string>
+    <string name="spotify_import_done">Lista "%1$s" importada (%2$d/%3$d)</string>
+    <string name="spotify_import_failed">No se pudo importar (URL no válida o lista privada)</string>
+    <string name="spotify_import_empty">La lista no contiene pistas válidas</string>
+    <string name="spotify_txt_import">Importar desde archivo (.txt)</string>
+    <string name="spotify_txt_desc">Seleccionar archivo de listas en USB o Descargas</string>
+    <string name="spotify_txt_processing">Procesando enlace %1$d de %2$d…</string>
+    <string name="spotify_txt_empty">El archivo no contiene enlaces de Spotify</string>
+    <string name="spotify_txt_done">Archivo importado: %1$d listas (%2$d fallidas)</string>
+
+    <!-- Personalización (tema + acento) -->
+    <string name="settings_personalization">Personalización</string>
+    <string name="settings_theme">Modo de apariencia</string>
+    <string name="settings_theme_desc">Elige entre tema oscuro o claro (adapta fondos, superficies y textos en toda la app).</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_glass">Glass (iPhone)</string>
+    <string name="settings_theme_glass_desc">Efecto cristal esmerilado iOS: wallpaper translúcido, paneles de cristal y bordes luminosos.</string>
+    <string name="settings_accent">Color de acento</string>
+    <string name="settings_accent_desc">Cambia el tono de acento global (reproducción, progreso, destacados y switches).</string>
+    <string name="accent_red">Rojo</string>
+    <string name="accent_orange">Naranja</string>
+    <string name="accent_amber">Ámbar</string>
+    <string name="accent_green">Verde</string>
+    <string name="accent_teal">Turquesa</string>
+    <string name="accent_blue">Azul</string>
+    <string name="accent_purple">Violeta</string>
+    <string name="accent_pink">Rosa</string>
+</resources>

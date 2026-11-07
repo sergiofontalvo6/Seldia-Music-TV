@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ===== MODO OSCURO (original) ===== -->
+    <color name="background">#030303</color>
+    <color name="surface">#121216</color>
+    <color name="surface_high">#1E1E26</color>
+    <color name="glass_surface">#CC14141A</color>
+    <color name="glass_surface_high">#D922222C</color>
+    <color name="glass_card">#B3181820</color>
+    <color name="glass_stroke">#29FFFFFF</color>
+    <color name="glass_highlight">#14FFFFFF</color>
+    <color name="primary">#FF0033</color>
+    <color name="primary_soft">#33FF0033</color>
+    <color name="accent_secondary">#FF4D6D</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#A1A1AA</color>
+    <color name="divider">#1FFFFFFF</color>
+    <color name="sidebar_bg">#0B0B10</color>
+    <color name="dot_online">#34D399</color>
+    <color name="dot_offline">#FBBF24</color>
+</resources>

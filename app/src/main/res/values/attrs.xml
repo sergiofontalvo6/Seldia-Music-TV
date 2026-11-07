@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="accentPrimary" format="color|reference" />
+    <attr name="accentSoft" format="color|reference" />
+    <attr name="accentSecondary" format="color|reference" />
+    <attr name="accentPrimaryDark" format="color|reference" />
+    <!-- Glass (iPhone): fondo wallpaper, barra lateral y paneles translúcidos -->
+    <attr name="glassBackground" format="color|reference" />
+    <attr name="glassSidebar" format="color|reference" />
+    <attr name="glassPanel" format="color|reference" />
+    <attr name="glassStroke" format="color|reference" />
+</resources>
