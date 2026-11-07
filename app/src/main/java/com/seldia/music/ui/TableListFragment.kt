@@ -9,7 +9,7 @@ import com.seldia.music.R
 import com.seldia.music.data.model.Track
 import com.seldia.music.databinding.FragmentTableListBinding
 import com.seldia.music.util.formatTotalDuration
-import com.seldia.music.util.showConfirmDialog
+import com.seldia.music.util.showModernConfirmDialog
 import com.seldia.music.util.showRenamePlaylistDialog
 
 /**
@@ -89,10 +89,11 @@ abstract class TableListFragment : TrackListFragment() {
     private fun promptDeletePlaylist() {
         val id = playlistIdForActions() ?: return
         val name = playlistNameForActions() ?: ""
-        showConfirmDialog(
+        showModernConfirmDialog(
             requireContext(),
             getString(R.string.delete_playlist),
-            getString(R.string.confirm_delete_playlist, name)
+            getString(R.string.confirm_delete_playlist, name),
+            getString(R.string.delete)
         ) {
             libraryVm.deletePlaylist(id)
             parentFragmentManager.popBackStack()

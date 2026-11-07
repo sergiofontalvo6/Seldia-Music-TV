@@ -13,10 +13,6 @@
         android:icon="@drawable/ic_download"
         android:title="@string/download_selected" />
     <item
-        android:id="@+id/action_remove_download"
-        android:icon="@drawable/ic_download"
-        android:title="@string/remove_download_selected" />
-    <item
         android:id="@+id/action_fav_toggle"
         android:icon="@drawable/ic_favorite"
         android:title="@string/fav_selected" />

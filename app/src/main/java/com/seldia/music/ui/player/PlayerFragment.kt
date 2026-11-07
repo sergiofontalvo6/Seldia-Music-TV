@@ -224,11 +224,18 @@ class PlayerFragment : Fragment() {
         if (lastArtworkUrl != artworkUrl) {
             lastArtworkUrl = artworkUrl
             if (artworkUrl.isNullOrBlank()) {
-                binding.ivArtwork.setImageResource(R.drawable.ic_music_note)
+                binding.ivArtwork.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                binding.ivArtwork.setImageResource(R.drawable.ic_seldia_logo)
+                runCatching {
+                    val anim = android.view.animation.AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_logo)
+                    binding.ivArtwork.startAnimation(anim)
+                }
             } else {
+                binding.ivArtwork.clearAnimation()
+                binding.ivArtwork.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
                 binding.ivArtwork.load(artworkUrl) {
-                    placeholder(R.drawable.ic_music_note)
-                    error(R.drawable.ic_music_note)
+                    placeholder(R.drawable.ic_seldia_logo)
+                    error(R.drawable.ic_seldia_logo)
                     crossfade(false)
                 }
             }

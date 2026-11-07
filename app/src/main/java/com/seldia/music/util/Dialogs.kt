@@ -54,6 +54,22 @@ fun showConfirmDialog(context: Context, title: String, message: String, onConfir
         .show()
 }
 
+/** Muestra un diálogo de confirmación estilo Glass listo. */
+fun showModernConfirmDialog(
+    context: Context,
+    title: String,
+    message: String,
+    confirmText: String,
+    onConfirm: () -> Unit
+) {
+    com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setMessage(message)
+        .setPositiveButton(confirmText) { _, _ -> onConfirm() }
+        .setNegativeButton("Cancelar", null)
+        .show()
+}
+
 /** Muestra el diálogo para renombrar una playlist. */
 fun showRenamePlaylistDialog(context: Context, currentName: String, onName: (String) -> Unit) {
     val input = EditText(context).apply {

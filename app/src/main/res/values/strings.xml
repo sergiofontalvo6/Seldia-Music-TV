@@ -82,6 +82,8 @@
     <string name="unfav_selected">Desmarcar favoritas</string>
     <string name="shuffle_playlist">Mezclar</string>
     <string name="add_all_to_queue">Añadir todas a la cola</string>
+    <string name="confirm_delete_selected">Se eliminarán %1$d canciones seleccionadas. ¿Continuar?</string>
+    <string name="confirm_download_selected">Se descargarán %1$d canciones (solo audio). ¿Continuar?</string>
     <string name="add_favorite">Añadir a favoritos</string>
     <string name="remove_favorite">Quitar de favoritos</string>
     <string name="remove_from_playlist">Quitar de la playlist</string>

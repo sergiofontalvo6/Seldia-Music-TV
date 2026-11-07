@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import com.seldia.music.R
 import com.seldia.music.databinding.FragmentTrackListBinding
 import com.seldia.music.ui.TrackListFragment
-import com.seldia.music.util.showConfirmDialog
+import com.seldia.music.util.showModernConfirmDialog
 
 class HistoryTabFragment : TrackListFragment() {
 
@@ -31,10 +31,11 @@ class HistoryTabFragment : TrackListFragment() {
         observeFavorites()
 
         binding.btnClear.setOnClickListener {
-            showConfirmDialog(
+            showModernConfirmDialog(
                 requireContext(),
                 getString(R.string.clear_history),
-                getString(R.string.confirm_clear_history)
+                getString(R.string.confirm_clear_history),
+                getString(R.string.clear_history)
             ) { libraryVm.clearHistory() }
         }
 

@@ -633,8 +633,8 @@ class MainActivity : AppCompatActivity() {
         if (track == null) {
             npTvTitle?.text = getString(R.string.nothing_playing)
             npTvArtist?.text = ""
-            npIvArtwork?.setImageResource(R.drawable.ic_music_note)
-            bar?.ivArtwork?.setImageResource(R.drawable.ic_music_note)
+            showLogoFallback(npIvArtwork)
+            showLogoFallback(bar?.ivArtwork)
             npProgressDownload?.visibility = View.GONE
             return
         }
@@ -688,11 +688,13 @@ class MainActivity : AppCompatActivity() {
             lastArtworkUrl = artworkUrl
             listOfNotNull(bar?.ivArtwork, npIvArtwork).forEach { image ->
                 if (artworkUrl.isNullOrBlank()) {
-                    image.setImageResource(R.drawable.ic_music_note)
+                    showLogoFallback(image)
                 } else {
+                    image.clearAnimation()
+                    image.scaleType = ImageView.ScaleType.CENTER_CROP
                     image.load(hqArtwork(artworkUrl)) {
-                        placeholder(R.drawable.ic_music_note)
-                        error(R.drawable.ic_music_note)
+                        placeholder(R.drawable.ic_seldia_logo)
+                        error(R.drawable.ic_seldia_logo)
                         crossfade(false)
                     }
                 }
@@ -740,11 +742,13 @@ class MainActivity : AppCompatActivity() {
             val fsArtwork = npFsIvArtwork
             if (fsArtwork != null) {
                 if (artworkUrl.isNullOrBlank()) {
-                    fsArtwork.setImageResource(R.drawable.ic_music_note)
+                    showLogoFallback(fsArtwork)
                 } else {
+                    fsArtwork.clearAnimation()
+                    fsArtwork.scaleType = ImageView.ScaleType.CENTER_CROP
                     fsArtwork.load(hqArtwork(artworkUrl)) {
-                        placeholder(R.drawable.ic_music_note)
-                        error(R.drawable.ic_music_note)
+                        placeholder(R.drawable.ic_seldia_logo)
+                        error(R.drawable.ic_seldia_logo)
                         crossfade(false)
                     }
                 }
@@ -778,6 +782,16 @@ class MainActivity : AppCompatActivity() {
     private fun showOverlayAndReschedule() {
         npFsBar?.visibility = View.VISIBLE
         scheduleOverlayHide()
+    }
+
+    private fun showLogoFallback(image: ImageView?) {
+        if (image == null) return
+        image.scaleType = ImageView.ScaleType.FIT_CENTER
+        image.setImageResource(R.drawable.ic_seldia_logo)
+        runCatching {
+            val anim = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.pulse_logo)
+            image.startAnimation(anim)
+        }
     }
 
     private fun updateArtwork(artworkUrl: String?) {

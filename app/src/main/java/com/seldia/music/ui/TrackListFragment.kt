@@ -23,6 +23,7 @@ import com.seldia.music.ui.adapters.TrackTableAdapter
 import com.seldia.music.util.OfflinePrefs
 import com.seldia.music.util.showAddToPlaylistDialog
 import com.seldia.music.util.showCreatePlaylistDialog
+import com.seldia.music.util.showModernConfirmDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -206,10 +207,6 @@ abstract class TrackListFragment : Fragment() {
                     batchDownload(selected)
                     true
                 }
-                R.id.action_remove_download -> {
-                    batchRemoveDownload(selected)
-                    true
-                }
                 R.id.action_fav_toggle -> {
                     batchFavToggle(selected)
                     true
@@ -231,15 +228,23 @@ abstract class TrackListFragment : Fragment() {
 
     /** Elimina según la sección: desde playlist → quitar; offline → borrar archivo; resto → contexto. */
     protected open fun batchDeleteSelected(selected: List<Track>) {
-        val remove = currentRemoveAction()
-        val deleteLocal = currentDeleteAction()
-        when {
-            remove != null -> selected.forEachIndexed { idx, track -> remove(track, idx) }
-            deleteLocal != null -> selected.forEach { deleteLocal(it) }
-            else -> {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    selected.forEach { libraryVm.toggleFavorite(it) }
-                    toast(getString(R.string.delete_selected))
+        if (!isAdded || view == null) return
+        showModernConfirmDialog(
+            context = requireContext(),
+            title = getString(R.string.delete_selected),
+            message = getString(R.string.confirm_delete_selected, selected.size),
+            confirmText = getString(R.string.delete)
+        ) {
+            val remove = currentRemoveAction()
+            val deleteLocal = currentDeleteAction()
+            when {
+                remove != null -> selected.forEachIndexed { idx, track -> remove(track, idx) }
+                deleteLocal != null -> selected.forEach { deleteLocal(it) }
+                else -> {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        selected.forEach { libraryVm.toggleFavorite(it) }
+                        toast(getString(R.string.delete_selected))
+                    }
                 }
             }
         }
@@ -279,10 +284,19 @@ abstract class TrackListFragment : Fragment() {
 
     protected fun batchDownload(selected: List<Track>) {
         if (!isAdded || view == null) return
-        selected.forEach { promptDownloadTrack(it) }
+        val count = selected.size
+        showModernConfirmDialog(
+            context = requireContext(),
+            title = getString(R.string.download_selected),
+            message = getString(R.string.confirm_download_selected, count),
+            confirmText = getString(R.string.download_track)
+        ) {
+            selected.forEach { promptDownloadTrack(it) }
+        }
     }
 
-    protected fun batchRemoveDownload(selected: List<Track>) {
+    /** Accesible desde un solo ícono (se conserva por compatibilidad). */
+    fun batchRemoveDownload(selected: List<Track>) {
         viewLifecycleOwner.lifecycleScope.launch {
             var removed = 0
             selected.forEach { track ->

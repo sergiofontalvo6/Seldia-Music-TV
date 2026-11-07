@@ -12,7 +12,7 @@ import com.seldia.music.databinding.FragmentPlaylistsBinding
 import com.seldia.music.ui.LibraryViewModel
 import com.seldia.music.ui.MainActivity
 import com.seldia.music.ui.adapters.PlaylistAdapter
-import com.seldia.music.util.showConfirmDialog
+import com.seldia.music.util.showModernConfirmDialog
 import com.seldia.music.util.showCreatePlaylistDialog
 import com.seldia.music.util.showRenamePlaylistDialog
 
@@ -42,10 +42,11 @@ class PlaylistsTabFragment : Fragment() {
                 }
             },
             onDelete = { playlist ->
-                showConfirmDialog(
+                showModernConfirmDialog(
                     requireContext(),
                     getString(R.string.delete),
-                    getString(R.string.confirm_delete_playlist, playlist.name)
+                    getString(R.string.confirm_delete_playlist, playlist.name),
+                    getString(R.string.delete)
                 ) { libraryVm.deletePlaylist(playlist.id) }
             },
             db = db

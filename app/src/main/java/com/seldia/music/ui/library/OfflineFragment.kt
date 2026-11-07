@@ -6,7 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import com.seldia.music.R
 import com.seldia.music.data.model.Track
 import com.seldia.music.ui.TableListFragment
-import com.seldia.music.util.showConfirmDialog
+import com.seldia.music.util.showModernConfirmDialog
 import kotlinx.coroutines.launch
 
 /**
@@ -31,10 +31,11 @@ class OfflineFragment : TableListFragment() {
     override fun deleteAction(): ((Track) -> Unit)? = ::confirmDelete
 
     private fun confirmDelete(track: Track) {
-        showConfirmDialog(
+        showModernConfirmDialog(
             requireContext(),
             getString(R.string.offline_delete_title),
-            getString(R.string.offline_delete_message, track.title)
+            getString(R.string.offline_delete_message, track.title),
+            getString(R.string.delete)
         ) {
             viewLifecycleOwner.lifecycleScope.launch {
                 val deleted = container.offlineMusicRepository.delete(track)
