@@ -28,6 +28,7 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
     fun addToQueue(track: Track) = player.addToQueue(track)
     fun removeFromQueue(index: Int) = player.removeFromQueue(index)
     fun playAt(index: Int) = player.playAt(index)
+    fun reorderQueue(orderedTracks: List<Track>) = player.reorderQueue(orderedTracks)
     fun setVideoMode(enabled: Boolean) = player.setVideoMode(enabled)
     val exoPlayer: ExoPlayer get() = player.player
 

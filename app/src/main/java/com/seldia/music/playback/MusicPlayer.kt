@@ -198,6 +198,16 @@ class MusicPlayer(
         publish()
     }
 
+    /** Reordena la cola tras drag & drop (ajusta el índice actual sin interrumpir la reproducción). */
+    fun reorderQueue(orderedTracks: List<Track>) {
+        if (orderedTracks.size != queue.size) return
+        val current = queue.getOrNull(currentIndex)
+        val keys = orderedTracks.map { it.key }
+        queue = orderedTracks.toMutableList()
+        currentIndex = current?.let { keys.indexOf(it.key) } ?: -1
+        publish()
+    }
+
     fun playAt(index: Int) {
         if (index < 0 || index >= queue.size) return
         currentIndex = index

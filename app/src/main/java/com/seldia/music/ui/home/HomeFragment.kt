@@ -43,6 +43,7 @@ class HomeFragment : TrackListFragment() {
 
         binding.recycler.layoutManager = LinearLayoutManager(requireContext())
         binding.recycler.adapter = makeAdapter()
+        attachDragAndDrop(binding.recycler)
 
         homeVm.favoritesCount.observe(viewLifecycleOwner) { count ->
             favoritesCount = count

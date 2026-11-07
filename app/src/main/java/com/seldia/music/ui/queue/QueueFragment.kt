@@ -9,7 +9,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.seldia.music.R
 import com.seldia.music.databinding.FragmentQueueBinding
 import com.seldia.music.ui.PlayerViewModel
@@ -46,6 +48,36 @@ class QueueFragment : Fragment() {
             onRemove = { _, index -> playerVm.removeFromQueue(index) }
         )
         binding.recycler.adapter = adapter
+
+        // Drag & drop en la cola: arrastra con el asidero y persiste en MusicPlayer.
+        val touchHelper = androidx.recyclerview.widget.ItemTouchHelper(
+            object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+                androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN,
+                0
+            ) {
+                override fun onMove(
+                    rv: androidx.recyclerview.widget.RecyclerView,
+                    viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
+                    target: androidx.recyclerview.widget.RecyclerView.ViewHolder
+                ): Boolean {
+                    adapter.moveItem(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
+                    return true
+                }
+
+                override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) = Unit
+
+                override fun isItemViewSwipeEnabled(): Boolean = false
+
+                override fun isLongPressDragEnabled(): Boolean = false
+
+                override fun clearView(rv: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder) {
+                    super.clearView(rv, viewHolder)
+                    playerVm.reorderQueue(adapter.snapshotList())
+                }
+            }
+        )
+        touchHelper.attachToRecyclerView(binding.recycler)
+        adapter.onDragStartRequested = { touchHelper.startDrag(it) }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

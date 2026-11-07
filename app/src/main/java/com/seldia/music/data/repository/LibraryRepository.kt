@@ -175,6 +175,15 @@ class LibraryRepository(private val db: AppDatabase) {
     suspend fun removeTrackFromPlaylist(playlistId: Long, track: Track) =
         playlistDao.removeTrack(playlistId, track.key)
 
+    /** Persiste el orden manual de pistas dentro de una playlist tras el arrastre. */
+    suspend fun reorderPlaylistTracks(playlistId: Long, orderedTracks: List<Track>) {
+        db.withTransaction {
+            orderedTracks.forEachIndexed { index, track ->
+                playlistDao.updateTrackPosition(playlistId, track.key, index)
+            }
+        }
+    }
+
     /**
      * Importación atómica de playlist (p. ej. desde Spotify):
      * crea la lista, guarda las pistas y las asocia en orden.

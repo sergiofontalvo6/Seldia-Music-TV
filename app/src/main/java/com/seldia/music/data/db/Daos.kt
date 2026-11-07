@@ -85,6 +85,9 @@ interface PlaylistDao {
     @Query("UPDATE playlists SET sortOrder = :sortOrder WHERE id = :id")
     suspend fun updateSortOrder(id: Long, sortOrder: Int)
 
+    @Query("UPDATE playlist_tracks SET position = :position WHERE playlistId = :playlistId AND trackId = :trackId")
+    suspend fun updateTrackPosition(playlistId: Long, trackId: String, position: Int)
+
     @Query("SELECT * FROM playlists WHERE id = :id")
     suspend fun getPlaylist(id: Long): PlaylistEntity?
 

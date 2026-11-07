@@ -11,6 +11,7 @@ import android.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -105,6 +106,46 @@ abstract class TrackListFragment : Fragment() {
 
     protected var actionMode: ActionMode? = null
         private set
+
+    /** Adjunta drag & drop con el asidero al RecyclerView indicado. */
+    protected fun attachDragAndDrop(recycler: androidx.recyclerview.widget.RecyclerView) {
+        val touchHelper = androidx.recyclerview.widget.ItemTouchHelper(
+            object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+                androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN,
+                0
+            ) {
+                override fun onMove(
+                    rv: androidx.recyclerview.widget.RecyclerView,
+                    viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
+                    target: androidx.recyclerview.widget.RecyclerView.ViewHolder
+                ): Boolean {
+                    if (!::adapter.isInitialized) return false
+                    adapter.moveItem(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
+                    return true
+                }
+
+                override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) = Unit
+
+                override fun isItemViewSwipeEnabled(): Boolean = false
+
+                override fun isLongPressDragEnabled(): Boolean = false
+
+                override fun clearView(rv: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder) {
+                    super.clearView(rv, viewHolder)
+                    if (!::adapter.isInitialized) return
+                    adapter.publishOrderChanged()
+                    onTracksReordered(adapter.snapshotList())
+                }
+            }
+        )
+        touchHelper.attachToRecyclerView(recycler)
+        if (::adapter.isInitialized) {
+            adapter.onDragStartRequested = { holder -> touchHelper.startDrag(holder) }
+        }
+    }
+
+    /** Persiste el nuevo orden tras el arrastre (cada vista decide su fuente). */
+    protected open fun onTracksReordered(tracks: List<Track>) = Unit
 
     /** Entrada a selección múltiple desde el menú overflow o pulsación larga. */
     fun startSelectionMode(firstTrack: Track? = null) {

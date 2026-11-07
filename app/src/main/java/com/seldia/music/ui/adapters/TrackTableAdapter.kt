@@ -7,6 +7,7 @@ import android.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.seldia.music.R
 import com.seldia.music.data.model.Source
@@ -32,7 +33,8 @@ class TrackTableAdapter(
     private val onDownload: ((Track) -> Unit)? = null,
     private val onDeleteLocal: ((Track) -> Unit)? = null,
     private val onRequestSelectionMode: (Track) -> Unit = {},
-    private val onSelectionChanged: (Set<String>) -> Unit = {}
+    private val onSelectionChanged: (Set<String>) -> Unit = {},
+    private val onOrderChanged: (List<Track>) -> Unit = {}
 ) : ListAdapter<Track, TrackTableAdapter.VH>(TrackDiffCallback()) {
 
     private var favoriteKeys: Set<String> = emptySet()
@@ -43,6 +45,7 @@ class TrackTableAdapter(
     /** Modo de selección múltiple (checkboxes visibles). */
     var selectionMode = false
         private set
+    var onDragStartRequested: (RecyclerView.ViewHolder) -> Unit = {}
     val selectedKeys: Set<String> get() = selectedSet.toSet()
     private val selectedSet = mutableSetOf<String>()
 
@@ -111,6 +114,20 @@ class TrackTableAdapter(
     }
 
     fun snapshotList(): List<Track> = getCurrentList().toList()
+
+    /** Mueve un ítem durante drag & drop (posiciones locales). */
+    fun moveItem(fromPosition: Int, toPosition: Int) {
+        if (fromPosition == toPosition) return
+        val list = currentList.toMutableList()
+        if (fromPosition !in list.indices || toPosition !in list.indices) return
+        list.add(toPosition, list.removeAt(fromPosition))
+        submitList(list)
+    }
+
+    /** Persiste en el llamador tras soltar el arrastre. */
+    fun publishOrderChanged() {
+        onOrderChanged(snapshotList())
+    }
 
     private fun notifyPositions(keys: Set<String>) {
         if (keys.isEmpty()) return
@@ -214,6 +231,12 @@ class TrackTableAdapter(
                     toggleSelection(track)
                     true
                 }
+            }
+            binding.ivDragHandle.setOnTouchListener { _, event ->
+                if (event.actionMasked == android.view.MotionEvent.ACTION_DOWN) {
+                    onDragStartRequested(this)
+                }
+                false
             }
             binding.btnFavorite.setOnClickListener { onFavoriteToggle(track) }
             binding.btnDownload.setOnClickListener { onDownload?.invoke(track) }

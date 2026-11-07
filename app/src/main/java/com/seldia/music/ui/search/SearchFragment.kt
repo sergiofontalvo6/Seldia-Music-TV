@@ -60,6 +60,7 @@ class SearchFragment : TrackListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.recycler.layoutManager = LinearLayoutManager(requireContext())
         binding.recycler.adapter = makeAdapter()
+        attachDragAndDrop(binding.recycler)
         observeFavorites()
 
         binding.btnVoice.setOnClickListener { startVoiceSearch() }

@@ -2,8 +2,10 @@ package com.seldia.music.ui.playlist
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import com.seldia.music.R
 import com.seldia.music.ui.TableListFragment
+import kotlinx.coroutines.launch
 
 class PlaylistDetailFragment : TableListFragment() {
 
@@ -34,6 +36,13 @@ class PlaylistDetailFragment : TableListFragment() {
         { track, _ -> libraryVm.removeTrackFromPlaylist(playlistId, track) }
 
     override fun playlistIdForActions(): Long = playlistId
+
+    override fun onTracksReordered(tracks: List<com.seldia.music.data.model.Track>) {
+        if (playlistId <= 0) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            container.libraryRepository.reorderPlaylistTracks(playlistId, tracks)
+        }
+    }
 
     override fun playlistNameForActions(): String? {
         // Nombre actualizado por el observer de headerTitle;fallback al título visible.
