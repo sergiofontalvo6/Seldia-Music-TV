@@ -28,7 +28,6 @@ class HistoryTabFragment : TrackListFragment() {
         binding.tvToolbarTitle.visibility = View.VISIBLE
         binding.btnClear.visibility = View.VISIBLE
         binding.recycler.adapter = makeAdapter()
-        observeFavorites()
 
         binding.btnClear.setOnClickListener {
             showModernConfirmDialog(

@@ -30,6 +30,27 @@ class OfflineFragment : TableListFragment() {
 
     override fun deleteAction(): ((Track) -> Unit)? = ::confirmDelete
 
+    /**
+     * Borrado en bloque con UNA sola confirmación para todos los elementos
+     * (antes se pedía confirmación por cada pista seleccionada).
+     */
+    override fun batchDeleteSelected(selected: List<Track>) {
+        if (!isAdded || view == null) return
+        com.seldia.music.util.showModernConfirmDialog(
+            context = requireContext(),
+            title = getString(R.string.delete_selected),
+            message = resources.getQuantityString(
+                com.seldia.music.R.plurals.confirm_delete_selected, selected.size, selected.size
+            ),
+            confirmText = getString(R.string.delete)
+        ) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                selected.forEach { container.offlineMusicRepository.delete(it) }
+                loadTracks()
+            }
+        }
+    }
+
     private fun confirmDelete(track: Track) {
         showModernConfirmDialog(
             requireContext(),

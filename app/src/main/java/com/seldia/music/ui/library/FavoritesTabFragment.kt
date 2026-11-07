@@ -26,7 +26,6 @@ class FavoritesTabFragment : TrackListFragment() {
         binding.tvToolbarTitle.setText(R.string.favorites)
         binding.tvToolbarTitle.visibility = View.VISIBLE
         binding.recycler.adapter = makeAdapter()
-        observeFavorites()
 
         libraryVm.favorites.observe(viewLifecycleOwner) { list ->
             adapter.submit(list)

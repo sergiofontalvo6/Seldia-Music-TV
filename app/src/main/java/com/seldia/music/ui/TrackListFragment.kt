@@ -97,6 +97,7 @@ abstract class TrackListFragment : Fragment() {
             onRequestSelectionMode = { startSelectionMode(it) },
             onSelectionChanged = { keys -> updateSelectionTitle(keys.size) }
         )
+        observeFavorites()
         observeDownloads()
         observeDownloadedKeys()
         observePlayingKey()
@@ -177,7 +178,7 @@ abstract class TrackListFragment : Fragment() {
     private fun updateSelectionTitle(count: Int) {
         if (!isAdded) return
         runCatching {
-            actionMode?.title = getString(R.string.selection_count, count)
+            actionMode?.title = resources.getQuantityString(R.plurals.selection_count, count, count)
         }
         actionMode?.subtitle = if (count == 0) null else ""
     }
@@ -232,7 +233,7 @@ abstract class TrackListFragment : Fragment() {
         showModernConfirmDialog(
             context = requireContext(),
             title = getString(R.string.delete_selected),
-            message = getString(R.string.confirm_delete_selected, selected.size),
+            message = resources.getQuantityString(R.plurals.confirm_delete_selected, selected.size, selected.size),
             confirmText = getString(R.string.delete)
         ) {
             val remove = currentRemoveAction()
@@ -288,7 +289,7 @@ abstract class TrackListFragment : Fragment() {
         showModernConfirmDialog(
             context = requireContext(),
             title = getString(R.string.download_selected),
-            message = getString(R.string.confirm_download_selected, count),
+            message = resources.getQuantityString(R.plurals.confirm_download_selected, count, count),
             confirmText = getString(R.string.download_track)
         ) {
             selected.forEach { promptDownloadTrack(it) }

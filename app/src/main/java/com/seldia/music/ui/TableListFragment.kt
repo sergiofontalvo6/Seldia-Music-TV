@@ -35,7 +35,6 @@ abstract class TableListFragment : TrackListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.recycler.adapter = makeAdapter(onRemove = removeAction(), onDeleteLocal = deleteAction())
         attachDragAndDrop(binding.recycler)
-        observeFavorites()
         binding.progress.visibility = View.VISIBLE
 
         binding.btnPlayAll.setOnClickListener {

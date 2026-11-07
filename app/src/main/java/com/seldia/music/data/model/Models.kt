@@ -26,7 +26,14 @@ data class Track(
     val providerToken: String? = null,
     val isFavorite: Boolean = false,
     /** Fecha de alta (epoch ms) para la columna "Fecha" de la tabla; 0 si se desconoce. */
-    val addedAt: Long = 0L
+    val addedAt: Long = 0L,
+    /**
+     * Claves adicionales que representan la misma pista (p. ej. LOCAL|id y
+     * YOUTUBE|videoId enlazadas por la misma URI de archivo). Permite que
+     * favoritos y descargas se sincronicen entre listas aunque la clave principal
+     * de la fila difiera según la fuente.
+     */
+    val linkedKeys: Set<String> = emptySet()
 ) {
     /** Clave única y estable en la base de datos local. */
     val key: String get() = "${source.name}|$id"

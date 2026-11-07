@@ -114,9 +114,32 @@ class LibraryRepository(private val db: AppDatabase) {
         return out.sortedWith(compareByDescending { it.addedAt })
     }
 
-    suspend fun isFavorite(track: Track): Boolean = trackDao.isFavorite(track.key) ?: false
+    suspend fun isFavorite(track: Track): Boolean {
+        val uri = track.uri?.takeIf { it.isNotBlank() }
+        if (uri != null) {
+            val linked = trackDao.getByUri(uri)
+            if (linked.isNotEmpty()) return linked.any { it.isFavorite }
+        }
+        return trackDao.isFavorite(track.key) ?: false
+    }
 
     suspend fun toggleFavorite(track: Track) {
+        // La misma pista puede estar guardada como LOCAL|id y YOUTUBE|videoId
+        // cuando el archivo descargado se fusiona por URI. Al cambiar el
+        // favorito hay que actualizar todas las representaciones para que
+        // Sin conexión, la cola y el resto de listas se repinten igual.
+        val uri = track.uri?.takeIf { it.isNotBlank() }
+        if (uri != null) {
+            val linked = trackDao.getByUri(uri)
+            if (linked.isNotEmpty()) {
+                val newFavorite = !linked.any { it.isFavorite }
+                linked.forEach { trackDao.setFavorite(it.id, newFavorite) }
+                if (linked.none { it.id == track.key }) {
+                    trackDao.upsert(track.toEntity(isFavorite = newFavorite))
+                }
+                return
+            }
+        }
         toggleFavorite(track.key, track)
     }
 

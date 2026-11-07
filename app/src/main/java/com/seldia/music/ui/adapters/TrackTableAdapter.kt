@@ -87,22 +87,22 @@ class TrackTableAdapter(
     fun updateFavorites(keys: Set<String>) {
         val changed = favoriteKeys.symmetricDiff(keys)
         favoriteKeys = keys
-        notifyPositions(changed)
+        notifyRelatedPositions(changed)
     }
 
     fun updateDownloadStates(states: Map<String, DownloadStatus>) {
-        val changed = downloadStates.keys + states.keys
+        val changed = (downloadStates.keys + states.keys)
             .filter { key -> downloadStates[key] != states[key] }
             .toSet()
         downloadStates = states
-        notifyPositions(changed)
+        notifyRelatedPositions(changed)
     }
 
     /** Claves de pistas ya descargadas y persistidas en Room (disponibles offline). */
     fun updateDownloadedKeys(keys: Set<String>) {
         val changed = downloadedKeys.symmetricDiff(keys)
         downloadedKeys = keys
-        notifyPositions(changed)
+        notifyRelatedPositions(changed)
     }
 
     /** Resalta la fila que está sonando. */
@@ -110,7 +110,7 @@ class TrackTableAdapter(
         if (playingKey == key) return
         val old = playingKey
         playingKey = key
-        listOfNotNull(old, key).forEach { notifyPositions(setOf(it)) }
+        listOfNotNull(old, key).forEach { notifyRelatedPositions(setOf(it)) }
     }
 
     fun snapshotList(): List<Track> = getCurrentList().toList()
@@ -129,14 +129,31 @@ class TrackTableAdapter(
         onOrderChanged(snapshotList())
     }
 
-    private fun notifyPositions(keys: Set<String>) {
+    private fun notifyRelatedPositions(keys: Set<String>) {
         if (keys.isEmpty()) return
-        // Solo filas afectadas (estado externo), no toda la lista.
-        keys.forEach { key ->
-            val pos = currentList.indexOfFirst { it.key == key }
-            if (pos >= 0) notifyItemChanged(pos)
+        // Una pista puede aparecer con otra clave (LOCAL frente a YOUTUBE) si
+        // ambas representan el mismo archivo. Repinta todas las filas relacionadas,
+        // no solo la primera coincidencia exacta.
+        currentList.forEachIndexed { index, item ->
+            if (item.key in keys || item.linkedKeys.any { it in keys }) {
+                notifyItemChanged(index)
+            }
         }
     }
+
+    private fun Track.isFavoriteState(): Boolean =
+        key in favoriteKeys || linkedKeys.any { it in favoriteKeys }
+
+    private fun Track.downloadStateOrIdle(): DownloadStatus {
+        downloadStates[key]?.let { return it }
+        return linkedKeys.firstNotNullOfOrNull { downloadStates[it] } ?: DownloadStatus.Idle
+    }
+
+    private fun Track.hasDownloadedFile(): Boolean =
+        source == Source.LOCAL ||
+            uri?.isNotBlank() == true ||
+            key in downloadedKeys ||
+            linkedKeys.any { it in downloadedKeys }
 
     private fun Set<String>.symmetricDiff(other: Set<String>): Set<String> =
         (this - other) + (other - this)
@@ -180,7 +197,7 @@ class TrackTableAdapter(
             binding.cbSelected.visibility = if (selectionMode) View.VISIBLE else View.GONE
             binding.cbSelected.isChecked = selected
 
-            val isFav = track.key in favoriteKeys
+            val isFav = track.isFavoriteState()
             binding.btnFavorite.setImageResource(
                 if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
             )
@@ -205,8 +222,8 @@ class TrackTableAdapter(
                 binding.btnDownload.visibility = View.GONE
                 binding.progressDownload.visibility = View.GONE
             } else {
-                val status = downloadStates[track.key] ?: DownloadStatus.Idle
-                val isDownloaded = downloadedKeys.contains(track.key) || status is DownloadStatus.Completed
+                val status = track.downloadStateOrIdle()
+                val isDownloaded = track.hasDownloadedFile()
                 val isBusy = status is DownloadStatus.Preparing || status is DownloadStatus.Downloading
 
                 binding.btnDownload.visibility = if (isBusy) View.GONE else View.VISIBLE
@@ -247,7 +264,7 @@ class TrackTableAdapter(
             val popup = PopupMenu(binding.root.context, anchor)
             popup.menu.add(0, MENU_QUEUE, 0, R.string.add_to_queue)
             popup.menu.add(0, MENU_PLAYLIST, 1, R.string.add_to_playlist)
-            val isFav = track.key in favoriteKeys
+            val isFav = track.isFavoriteState()
             popup.menu.add(
                 0, MENU_FAVORITE, 2,
                 if (isFav) R.string.remove_favorite else R.string.add_favorite

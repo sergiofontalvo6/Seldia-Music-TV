@@ -40,59 +40,65 @@ class OfflineMusicRepository(
             com.seldia.music.data.db.sanitizeArtworkUrl(raw)
     }
 
-    suspend fun loadTracks(): List<Track> = withContext(Dispatchers.IO) {
-        val result = mutableListOf<Track>()
-        val albumArtIds = loadAlbumArtIds()
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DATE_ADDED
-        )
-        val collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        // IS_MUSIC puede quedar NULL en pistas insertadas por SeldiaMusic en API <= 28;
-        // el MIME audio/* garantiza que las descargas offline aparezcan igualmente.
-        val selection = "(${MediaStore.Audio.Media.IS_MUSIC} != 0 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%')"
-        val sortOrder = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
+    suspend fun loadTracks(): List<Track> = runCatching {
+        withContext(Dispatchers.IO) {
+            val result = mutableListOf<Track>()
+            val albumArtIds = loadAlbumArtIds()
+            val projection = arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.DATE_ADDED
+            )
+            val collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+            // IS_MUSIC puede quedar NULL en pistas insertadas por SeldiaMusic en API <= 28;
+            // el MIME audio/* garantiza que las descargas offline aparezcan igualmente.
+            val selection = "(${MediaStore.Audio.Media.IS_MUSIC} != 0 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%')"
+            val sortOrder = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
 
-        context.contentResolver.query(collection, projection, selection, null, sortOrder)?.use { cursor ->
-            val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-            val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-            val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-            val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-            val durCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-            val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-            val dateCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+            // Sin permiso el proveedor lanza SecurityException en la consulta;
+            // la lista offline debe quedarse vacía, no cerrar la app.
+            runCatching {
+                context.contentResolver.query(collection, projection, selection, null, sortOrder)?.use { cursor ->
+                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                    val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                    val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                    val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                    val durCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+                    val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+                    val dateCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
 
-            while (cursor.moveToNext()) {
-                val id = cursor.getLong(idCol)
-                val albumId = cursor.getLong(albumIdCol)
-                val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
-                val artwork = if (albumId != 0L && albumId in albumArtIds) {
-                    "content://media/external/audio/albumart/$albumId"
-                } else {
-                    null
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(idCol)
+                        val albumId = cursor.getLong(albumIdCol)
+                        val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+                        val artwork = if (albumId != 0L && albumId in albumArtIds) {
+                            "content://media/external/audio/albumart/$albumId"
+                        } else {
+                            null
+                        }
+                        result.add(
+                            Track(
+                                id = id.toString(),
+                                title = cleanTitle(cursor.getString(titleCol)),
+                                artist = cleanArtist(cursor.getString(artistCol)),
+                                album = cleanAlbum(cursor.getString(albumCol)),
+                                durationMs = cursor.getLong(durCol),
+                                artworkUrl = cleanArtwork(artwork),
+                                uri = uri.toString(),
+                                source = Source.LOCAL,
+                                addedAt = cursor.getLong(dateCol) * 1000L
+                            )
+                        )
+                    }
                 }
-                result.add(
-                    Track(
-                        id = id.toString(),
-                        title = cleanTitle(cursor.getString(titleCol)),
-                        artist = cleanArtist(cursor.getString(artistCol)),
-                        album = cleanAlbum(cursor.getString(albumCol)),
-                        durationMs = cursor.getLong(durCol),
-                        artworkUrl = cleanArtwork(artwork),
-                        uri = uri.toString(),
-                        source = Source.LOCAL,
-                        addedAt = cursor.getLong(dateCol) * 1000L
-                    )
-                )
             }
+            mergeRoomMetadata(result)
         }
-        mergeRoomMetadata(result)
-    }
+    }.getOrDefault(emptyList())
 
     /**
      * Repara filas Room "LOCAL|id" asociadas a la misma URI: les copia los
@@ -145,7 +151,8 @@ class OfflineMusicRepository(
                     ?: rows.firstNotNullOfOrNull { cleanArtwork(it.artworkUrl) }
                     ?: track.artworkUrl,
                 addedAt = maxOf(yt?.addedAt ?: 0L, track.addedAt),
-                isFavorite = fav
+                isFavorite = fav,
+                linkedKeys = (rows.map { it.id } + track.key).toSet()
             )
         }
     }
