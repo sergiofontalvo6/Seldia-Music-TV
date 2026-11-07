@@ -119,31 +119,33 @@ object UpdateCheck {
                 .get()
                 .build()
             val response = downloadClient.newCall(request).execute()
-            if (!response.isSuccessful) {
-                throw IOException("Descarga APK fallida (HTTP ${response.code})")
-            }
-            val body = response.body ?: throw IOException("Respuesta sin cuerpo")
-            val dir = File(requireContext().cacheDir, "updates").apply { mkdirs() }
-            val out = File(dir, release.apkName)
-            var downloaded = 0L
-            val total = body.contentLength().takeIf { it > 0 } ?: -1L
-            body.byteStream().buffered().use { input ->
-                out.outputStream().buffered().use { output ->
-                    val buf = ByteArray(32 * 1024)
-                    while (true) {
-                        val read = input.read(buf)
-                        if (read < 0) break
-                        output.write(buf, 0, read)
-                        downloaded += read
-                        if (total > 0) onProgress(downloaded, total)
+            response.use { resp ->
+                if (!resp.isSuccessful) {
+                    throw IOException("Descarga APK fallida (HTTP ${resp.code})")
+                }
+                val body = resp.body ?: throw IOException("Respuesta sin cuerpo")
+                val dir = File(requireContext().cacheDir, "updates").apply { mkdirs() }
+                val out = File(dir, release.apkName)
+                var downloaded = 0L
+                val total = body.contentLength().takeIf { it > 0 } ?: -1L
+                body.byteStream().buffered().use { input ->
+                    out.outputStream().buffered().use { output ->
+                        val buf = ByteArray(32 * 1024)
+                        while (true) {
+                            val read = input.read(buf)
+                            if (read < 0) break
+                            output.write(buf, 0, read)
+                            downloaded += read
+                            if (total > 0) onProgress(downloaded, total)
+                        }
                     }
                 }
+                if (!out.exists() || out.length() == 0L) {
+                    throw IOException("APK vacío tras la descarga")
+                }
+                Log.d(TAG, "APK descargado: ${out.absolutePath} ${out.length()}B")
+                out
             }
-            if (!out.exists() || out.length() == 0L) {
-                throw IOException("APK vacío tras la descarga")
-            }
-            Log.d(TAG, "APK descargado: ${out.absolutePath} ${out.length()}B")
-            out
         }
     }
 
@@ -153,6 +155,7 @@ object UpdateCheck {
         return Intent(Intent.ACTION_VIEW).apply {
             data = uri
             type = "application/vnd.android.package-archive"
+            addCategory(Intent.CATEGORY_DEFAULT)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }

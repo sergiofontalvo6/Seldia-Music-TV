@@ -171,7 +171,7 @@
     <string name="update_available_title">Nueva versión disponible</string>
     <string name="update_available_message">Versión %1$s disponible (actual %2$s).</string>
     <string name="update_download">Descargar e instalar</string>
-    <string name="update_downloading">Descargando APK… %1$d/%2$d MB</string>
+    <string name="update_downloading">Descargando APK… %1$s/%2$s MB</string>
     <string name="update_installed">Abriendo instalador…</string>
     <string name="update_no_assets">La release no incluye un APK adjunto (.apk). Revisa GitHub.</string>
     <string name="update_failed">No se pudo comprobar la actualización. Revisa tu conexión.</string>

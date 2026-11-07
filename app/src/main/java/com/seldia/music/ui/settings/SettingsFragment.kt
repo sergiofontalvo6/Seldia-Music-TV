@@ -404,8 +404,10 @@ class SettingsFragment : Fragment() {
             binding.tvUpdateStatus.text = getString(R.string.update_installed)
             runCatching {
                 startActivity(UpdateCheck.installIntent(requireContext(), apk))
-            }.onFailure {
-                binding.tvUpdateStatus.text = getString(R.string.update_download_failed)
+            }.onFailure { error ->
+                android.util.Log.e("Update", "install intent failed", error)
+                binding.tvUpdateStatus.text =
+                    (error.message ?: getString(R.string.update_download_failed))
             }
         }
     }
