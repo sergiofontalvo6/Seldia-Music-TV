@@ -6,12 +6,25 @@ Aplicación musical completa para Android, con diseño **Dark Glassmorphism** y 
 
 ---
 
+## Capturas
+
+![Playlist — tres paneles con barra lateral, tabla y Sonando ahora](docs/screenshots/014313.png)
+
+| Panel completo | Descarga offline (toast) | Ajustes + vídeos |
+|---|---|---|
+| ![Favoritas con reproducción y barra inferior](docs/screenshots/014653.png) | ![Download saved toast](docs/screenshots/014653.png) | ![Ajustes Spotify y Actualización OTA](docs/screenshots/014835.png) |
+
+> Tres paneles (lateral · contenido · "Sonando ahora"), filtros `Listas | Artistas | Buscar`, reproducción y barra inferior flotante. Ajustes con Spotify (URL/`.txt`), Actualización OTA, temas y acentos.
+
+---
+
 ## Características
 
 | Área | Estado |
 |------|--------|
 | **Tres paneles en horizontal** (lateral · contenido · "Sonando ahora") + barra inferior flotante, con PlayerView/ExoPlayer vinculado correctamente (sin pantalla negra en vídeo) | ✅ |
-| **Panel lateral:** fila de filtros `Listas \| Artistas \| Buscar`; al iniciar se selecciona la primera lista (Favoritas) en el centro; playlists laterales con carátula dinámica (sin bloque rojo / `<unknown>`); "Sin conexión" abajo, Ajustes solo icono | ✅ |
+| **Logo** integrado en la cabecera (junto a "Seldia Music", card 36 dp sobre Glass) | ✅ |
+| **Panel lateral:** fila de filtros `Listas \| Artistas \| Buscar`; al iniciar se selecciona la primera lista (Favoritas) en el centro; playlists **ordenadas por reproducciones** (la más escuchada primero, vía Room `COUNT(history)` + `ViewModel.sortedByDescending`); "Sin conexión" abajo, Ajustes solo icono | ✅ |
 | **Búsqueda directa en YouTube vía NewPipe Extractor** (`YoutubeSearchQueryHandlerFactory.ALL`, no solo música) | ✅ |
 | **Reproducción unificada Media3**: panel derecho con audio/vídeo, fullscreen con controles que se ocultan a 5 s, barra inferior clonada en fullscreen, letras en Bottom Sheet | ✅ |
 | **Descargas sincronizadas en todas las vistas** (flecha en acento al descargar, también en Offline) | ✅ |
@@ -107,3 +120,13 @@ app/src/main/java/com/seldia/music/
 buildSrc/                        # Plugin CharsetShim (compatibilidad NewPipe en API 27)
 app/proguard-rules.pro           # R8: reglas Media3, Room, Coil, Rhino
 ```
+
+---
+
+## Ko-fi ☕
+
+Si te gusta el proyecto, puedes invitarme un café o apoyar el mantenimiento:
+
+* **Buy me a coffee (Ko-fi):** <a href="https://ko-fi.com/seldiamusic" target="_blank"><img src="https://cdn.ko-fi.com/cdn/kofi2.png?v=3" height="36" alt="Buy Me a Coffee at ko-fi.com" /></a>
+* Directo: https://ko-fi.com/seldiamusic
+

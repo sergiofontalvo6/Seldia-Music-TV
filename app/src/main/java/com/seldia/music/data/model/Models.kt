@@ -39,5 +39,7 @@ data class Playlist(
     val id: Long,
     val name: String,
     val createdAt: Long,
-    val trackCount: Int = 0
+    val trackCount: Int = 0,
+    /** Reproducciones reales del historial (para ordenar de más a menos escuchada). */
+    val playCount: Int = 0
 )

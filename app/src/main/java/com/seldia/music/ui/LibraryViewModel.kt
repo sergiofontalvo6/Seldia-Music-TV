@@ -3,6 +3,7 @@ package com.seldia.music.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.seldia.music.SeldiaApp
 import com.seldia.music.data.model.Playlist
@@ -15,6 +16,8 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     private val repository = (app as SeldiaApp).container.libraryRepository
 
     val playlists: LiveData<List<Playlist>> = repository.observePlaylists()
+        .map { list -> list.sortedByDescending { it.playCount } }
+
     val favorites: LiveData<List<Track>> = repository.observeFavorites()
     val history: LiveData<List<Track>> = repository.observeHistory()
 

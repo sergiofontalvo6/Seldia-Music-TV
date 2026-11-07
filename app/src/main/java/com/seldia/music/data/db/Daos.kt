@@ -60,7 +60,8 @@ data class PlaylistWithCount(
     val id: Long,
     val name: String,
     val createdAt: Long,
-    val trackCount: Int
+    val trackCount: Int,
+    val playCount: Int = 0
 )
 
 @Dao
@@ -68,10 +69,14 @@ interface PlaylistDao {
     @Insert
     suspend fun insertPlaylist(playlist: PlaylistEntity): Long
 
-    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, COUNT(pt.trackId) AS trackCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId GROUP BY p.id ORDER BY p.createdAt DESC")
+    /**
+     * Playlists ordenadas de la más escuchada a la menos:
+     * cuenta reproducciones reales del historial (history.trackKey = playlist_tracks.trackId).
+     */
+    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, COUNT(DISTINCT pt.trackId) AS trackCount, COUNT(h.id) AS playCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId LEFT JOIN history h ON h.trackKey = pt.trackId GROUP BY p.id ORDER BY playCount DESC, p.createdAt DESC")
     fun observePlaylists(): LiveData<List<PlaylistWithCount>>
 
-    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, COUNT(pt.trackId) AS trackCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId GROUP BY p.id ORDER BY p.createdAt DESC")
+    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, COUNT(DISTINCT pt.trackId) AS trackCount, COUNT(h.id) AS playCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId LEFT JOIN history h ON h.trackKey = pt.trackId GROUP BY p.id ORDER BY playCount DESC, p.createdAt DESC")
     suspend fun getAllPlaylists(): List<PlaylistWithCount>
 
     @Query("SELECT * FROM playlists WHERE id = :id")

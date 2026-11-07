@@ -112,16 +112,20 @@ class LibraryRepository(private val db: AppDatabase) {
 
     // ---- Playlists ----
 
+    /**
+     * Playlists ordenadas de la más escuchada a la menos (orden verificado en Room:
+     * `COUNT(history) DESC, createdAt DESC`). Se pasa el orden sin reordenar aquí.
+     */
     fun observePlaylists(): LiveData<List<Playlist>> =
         playlistDao.observePlaylists().map { list ->
-            list.map { Playlist(it.id, it.name, it.createdAt, it.trackCount) }
+            list.map { Playlist(it.id, it.name, it.createdAt, it.trackCount, it.playCount) }
         }
 
     suspend fun createPlaylist(name: String): Long =
         playlistDao.insertPlaylist(PlaylistEntity(name = name))
 
     suspend fun getPlaylists(): List<Playlist> =
-        playlistDao.getAllPlaylists().map { Playlist(it.id, it.name, it.createdAt, it.trackCount) }
+        playlistDao.getAllPlaylists().map { Playlist(it.id, it.name, it.createdAt, it.trackCount, it.playCount) }
 
     suspend fun renamePlaylist(id: Long, name: String) = playlistDao.renamePlaylist(id, name)
 
