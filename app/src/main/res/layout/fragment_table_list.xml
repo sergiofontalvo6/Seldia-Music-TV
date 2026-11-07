@@ -73,39 +73,15 @@
                 android:textColor="@color/on_primary"
                 android:textAllCaps="false" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_shuffle_all"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="46dp"
+            <ImageButton
+                android:id="@+id/btn_more_options"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:layout_marginStart="10dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="@string/shuffle_all"
-                app:cornerRadius="23dp"
-                app:icon="@drawable/ic_shuffle"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:strokeColor="@color/glass_stroke"
-                app:strokeWidth="1.5dp"
-                android:textColor="@color/text_primary"
-                android:textAllCaps="false" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_add_all"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="46dp"
-                android:layout_marginStart="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="@string/add_all"
-                app:cornerRadius="23dp"
-                app:icon="@drawable/ic_add"
-                app:iconGravity="textStart"
-                app:iconPadding="6dp"
-                android:textColor="@color/text_primary"
-                android:textAllCaps="false" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_more"
+                android:tint="@color/text_primary" />
         </LinearLayout>
     </LinearLayout>
 

@@ -30,13 +30,52 @@ class TrackTableAdapter(
     private val onAddToPlaylist: (Track) -> Unit,
     private val onRemove: ((Track, Int) -> Unit)? = null,
     private val onDownload: ((Track) -> Unit)? = null,
-    private val onDeleteLocal: ((Track) -> Unit)? = null
+    private val onDeleteLocal: ((Track) -> Unit)? = null,
+    private val onRequestSelectionMode: (Track) -> Unit = {},
+    private val onSelectionChanged: (Set<String>) -> Unit = {}
 ) : ListAdapter<Track, TrackTableAdapter.VH>(TrackDiffCallback()) {
 
     private var favoriteKeys: Set<String> = emptySet()
     private var downloadStates: Map<String, DownloadStatus> = emptyMap()
     private var downloadedKeys: Set<String> = emptySet()
     private var playingKey: String? = null
+
+    /** Modo de selección múltiple (checkboxes visibles). */
+    var selectionMode = false
+        private set
+    val selectedKeys: Set<String> get() = selectedSet.toSet()
+    private val selectedSet = mutableSetOf<String>()
+
+    fun setSelectionMode(enabled: Boolean) {
+        if (selectionMode == enabled) return
+        selectionMode = enabled
+        if (!enabled) selectedSet.clear()
+        notifyItemRangeChanged(0, itemCount, "selection")
+        onSelectionChanged(selectedSet.toSet())
+    }
+
+    fun toggleSelection(track: Track) {
+        val pos = currentList.indexOfFirst { it.key == track.key }
+        if (pos < 0) return
+        if (!selectedSet.add(track.key)) selectedSet.remove(track.key)
+        notifyItemChanged(pos)
+        onSelectionChanged(selectedSet.toSet())
+    }
+
+    fun clearSelection() {
+        if (selectedSet.isEmpty()) return
+        selectedSet.clear()
+        notifyItemRangeChanged(0, itemCount, "selection")
+        onSelectionChanged(selectedSet.toSet())
+    }
+
+    fun select(track: Track) {
+        if (selectedSet.add(track.key)) {
+            val pos = currentList.indexOfFirst { it.key == track.key }
+            if (pos >= 0) notifyItemChanged(pos)
+        }
+        onSelectionChanged(selectedSet.toSet())
+    }
 
     fun submit(list: List<Track>) {
         submitList(list)
@@ -92,6 +131,18 @@ class TrackTableAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(getItem(position), position)
 
+    override fun onBindViewHolder(
+        holder: VH,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isNotEmpty()) {
+            holder.bind(getItem(position), position)
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
+    }
+
     inner class VH(private val binding: ItemTrackTableBinding) :
         androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root) {
 
@@ -106,6 +157,11 @@ class TrackTableAdapter(
             )
             binding.tvArtist.text = track.artist
             binding.tvDuration.text = formatDuration(track.durationMs)
+
+            // Modo selección: checkbox visible y estado de la fila.
+            val selected = track.key in selectedSet
+            binding.cbSelected.visibility = if (selectionMode) View.VISIBLE else View.GONE
+            binding.cbSelected.isChecked = selected
 
             val isFav = track.key in favoriteKeys
             binding.btnFavorite.setImageResource(
@@ -147,7 +203,18 @@ class TrackTableAdapter(
                 )
             }
 
-            binding.root.setOnClickListener { onClick(track, position) }
+            binding.root.setOnClickListener {
+                if (selectionMode) toggleSelection(track) else onClick(track, position)
+            }
+            binding.root.setOnLongClickListener {
+                if (!selectionMode) {
+                    onRequestSelectionMode(track)
+                    true
+                } else {
+                    toggleSelection(track)
+                    true
+                }
+            }
             binding.btnFavorite.setOnClickListener { onFavoriteToggle(track) }
             binding.btnDownload.setOnClickListener { onDownload?.invoke(track) }
             binding.btnMore.setOnClickListener { showMenu(it, track) }

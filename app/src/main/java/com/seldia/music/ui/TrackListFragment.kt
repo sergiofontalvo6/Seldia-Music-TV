@@ -3,8 +3,11 @@ package com.seldia.music.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import android.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -88,12 +91,166 @@ abstract class TrackListFragment : Fragment() {
             onAddToPlaylist = ::promptAddToPlaylist,
             onRemove = onRemove,
             onDownload = ::promptDownloadTrack,
-            onDeleteLocal = onDeleteLocal
+            onDeleteLocal = onDeleteLocal,
+            onRequestSelectionMode = { startSelectionMode(it) },
+            onSelectionChanged = { keys -> updateSelectionTitle(keys.size) }
         )
         observeDownloads()
         observeDownloadedKeys()
         observePlayingKey()
         return adapter
+    }
+
+    // ---- Modo de selección múltiple (ActionMode superior) ----
+
+    protected var actionMode: ActionMode? = null
+        private set
+
+    /** Entrada a selección múltiple desde el menú overflow o pulsación larga. */
+    fun startSelectionMode(firstTrack: Track? = null) {
+        if (!::adapter.isInitialized) return
+        adapter.setSelectionMode(true)
+        if (firstTrack != null) adapter.select(firstTrack)
+        val activity = requireActivity()
+        if (activity is androidx.appcompat.app.AppCompatActivity) {
+            actionMode = activity.startActionMode(selectionCallback)
+            updateSelectionTitle(adapter.selectedKeys.size)
+        }
+    }
+
+    fun finishSelectionMode() {
+        actionMode?.finish()
+        finishSelection()
+    }
+
+    private fun finishSelection() {
+        if (::adapter.isInitialized) adapter.setSelectionMode(false)
+        actionMode = null
+    }
+
+    private fun updateSelectionTitle(count: Int) {
+        actionMode?.title = getString(R.string.selection_count, count)
+        actionMode?.subtitle = if (count == 0) null else ""
+    }
+
+    private val selectionCallback = object : ActionMode.Callback {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            mode.menuInflater.inflate(R.menu.menu_selection, menu)
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
+
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+            val selected = selectedTracks()
+            if (selected.isEmpty()) return false
+            return when (item.itemId) {
+                R.id.action_delete_selected -> {
+                    batchDeleteSelected(selected)
+                    mode.finish()
+                    true
+                }
+                R.id.action_add_to_playlist -> {
+                    batchAddToPlaylist(selected)
+                    true
+                }
+                R.id.action_download_selected -> {
+                    batchDownload(selected)
+                    true
+                }
+                R.id.action_remove_download -> {
+                    batchRemoveDownload(selected)
+                    true
+                }
+                R.id.action_fav_toggle -> {
+                    batchFavToggle(selected)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode) {
+            finishSelection()
+        }
+    }
+
+    protected fun selectedTracks(): List<Track> {
+        if (!::adapter.isInitialized || adapter.selectedKeys.isEmpty()) return emptyList()
+        val keys = adapter.selectedKeys
+        return adapter.snapshotList().filter { it.key in keys }
+    }
+
+    /** Elimina según la sección: desde playlist → quitar; offline → borrar archivo; resto → contexto. */
+    protected open fun batchDeleteSelected(selected: List<Track>) {
+        val remove = currentRemoveAction()
+        val deleteLocal = currentDeleteAction()
+        when {
+            remove != null -> selected.forEachIndexed { idx, track -> remove(track, idx) }
+            deleteLocal != null -> selected.forEach { deleteLocal(it) }
+            else -> {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    selected.forEach { libraryVm.toggleFavorite(it) }
+                    toast(getString(R.string.delete_selected))
+                }
+            }
+        }
+    }
+
+    protected open fun currentRemoveAction(): ((Track, Int) -> Unit)? = null
+
+    protected open fun currentDeleteAction(): ((Track) -> Unit)? = null
+
+    protected fun batchAddToPlaylist(selected: List<Track>) {
+        if (selected.isEmpty()) return
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val playlists = container.libraryRepository.getPlaylists()
+            withContext(Dispatchers.Main) {
+                com.seldia.music.util.showAddToPlaylistDialog(
+                    requireContext(),
+                    playlists,
+                    onCreateNew = {
+                        com.seldia.music.util.showCreatePlaylistDialog(requireContext()) { name ->
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                val id = container.libraryRepository.createPlaylist(name)
+                                selected.forEach { container.libraryRepository.addTrackToPlaylist(id, it) }
+                                toast(resources.getQuantityString(com.seldia.music.R.plurals.playlist_count, selected.size, selected.size))
+                            }
+                        }
+                    },
+                    onPick = { pl ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            selected.forEach { container.libraryRepository.addTrackToPlaylist(pl.id, it) }
+                            toast("Añadido a \"${pl.name}\"")
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    protected fun batchDownload(selected: List<Track>) {
+        selected.forEach { promptDownloadTrack(it) }
+    }
+
+    protected fun batchRemoveDownload(selected: List<Track>) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            var removed = 0
+            selected.forEach { track ->
+                if (container.offlineMusicRepository.delete(track)) removed++
+            }
+            toast(resources.getQuantityString(com.seldia.music.R.plurals.playlist_count, removed, removed))
+        }
+    }
+
+    protected fun batchFavToggle(selected: List<Track>) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            selected.forEach { track ->
+                val isFav = container.libraryRepository.isFavorite(track)
+                if (!isFav) libraryVm.toggleFavorite(track)
+            }
+            toast(getString(R.string.fav_selected))
+        }
     }
 
     private fun onFavoriteToggle(track: Track) {

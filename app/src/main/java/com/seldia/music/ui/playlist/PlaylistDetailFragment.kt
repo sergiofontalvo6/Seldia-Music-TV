@@ -33,6 +33,13 @@ class PlaylistDetailFragment : TableListFragment() {
     override fun removeAction(): ((com.seldia.music.data.model.Track, Int) -> Unit)? =
         { track, _ -> libraryVm.removeTrackFromPlaylist(playlistId, track) }
 
+    override fun playlistIdForActions(): Long = playlistId
+
+    override fun playlistNameForActions(): String? {
+        // Nombre actualizado por el observer de headerTitle;fallback al título visible.
+        return binding.tvTitleBig.text?.toString()?.takeIf { it.isNotBlank() }
+    }
+
     override fun emptyText(): String = getString(R.string.empty_playlist)
 
     companion object {

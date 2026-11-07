@@ -21,6 +21,15 @@
         android:textColor="@color/text_secondary"
         android:textSize="12sp" />
 
+    <CheckBox
+        android:id="@+id/cb_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="?attr/accentPrimary"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone" />
+
     <com.google.android.material.card.MaterialCardView
         android:layout_width="44dp"
         android:layout_height="44dp"

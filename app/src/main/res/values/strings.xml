@@ -69,6 +69,19 @@
 
     <string name="add_to_queue">Añadir a la cola</string>
     <string name="add_to_playlist">Añadir a playlist</string>
+    <string name="rename_playlist">Renombrar playlist</string>
+    <string name="delete_playlist">Borrar playlist</string>
+    <string name="select_songs">Seleccionar canciones</string>
+    <string name="selection_count">%1$d seleccionadas</string>
+    <string name="selection_clear">Limpiar selección</string>
+    <string name="delete_selected">Eliminar seleccionadas</string>
+    <string name="add_selected_to_playlist">Añadir seleccionadas a playlist</string>
+    <string name="download_selected">Descargar seleccionadas</string>
+    <string name="remove_download_selected">Quitar descarga de seleccionadas</string>
+    <string name="fav_selected">Marcar favoritas</string>
+    <string name="unfav_selected">Desmarcar favoritas</string>
+    <string name="shuffle_playlist">Mezclar</string>
+    <string name="add_all_to_queue">Añadir todas a la cola</string>
     <string name="add_favorite">Añadir a favoritos</string>
     <string name="remove_favorite">Quitar de favoritos</string>
     <string name="remove_from_playlist">Quitar de la playlist</string>
