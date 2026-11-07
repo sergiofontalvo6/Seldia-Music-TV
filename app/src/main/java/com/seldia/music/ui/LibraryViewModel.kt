@@ -3,7 +3,6 @@ package com.seldia.music.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.seldia.music.SeldiaApp
 import com.seldia.music.data.model.Playlist
@@ -16,13 +15,18 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     private val repository = (app as SeldiaApp).container.libraryRepository
 
     val playlists: LiveData<List<Playlist>> = repository.observePlaylists()
-        .map { list -> list.sortedByDescending { it.playCount } }
 
     val favorites: LiveData<List<Track>> = repository.observeFavorites()
     val history: LiveData<List<Track>> = repository.observeHistory()
+    val downloadedKeys: LiveData<Set<String>> = repository.observeDownloadedTrackKeys()
 
     fun createPlaylist(name: String) {
         viewModelScope.launch { repository.createPlaylist(name) }
+    }
+
+    /** Persiste el orden tras el drag & drop (el LiveData ya viene ordenado por sortOrder). */
+    fun reorderPlaylists(orderedIds: List<Long>) {
+        viewModelScope.launch { repository.reorderPlaylists(orderedIds) }
     }
 
     fun renamePlaylist(id: Long, name: String) {
@@ -35,6 +39,16 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
 
     fun toggleFavorite(track: Track) {
         viewModelScope.launch { repository.toggleFavorite(track) }
+    }
+
+    /** Alterna favorito por clave (los ViewModels activos se repintan solos vía LiveData). */
+    fun toggleFavoriteByKey(trackId: String) {
+        viewModelScope.launch { repository.toggleFavorite(trackId) }
+    }
+
+    /** Actualiza estado de descarga (Single Source of Truth: Room). */
+    fun updateDownloadStatus(trackId: String, isDownloaded: Boolean, uri: String? = null) {
+        viewModelScope.launch { repository.updateDownloadStatus(trackId, isDownloaded, uri) }
     }
 
     fun addTrackToPlaylist(playlistId: Long, track: Track) {

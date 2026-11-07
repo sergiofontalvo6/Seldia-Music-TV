@@ -60,8 +60,8 @@ data class PlaylistWithCount(
     val id: Long,
     val name: String,
     val createdAt: Long,
-    val trackCount: Int,
-    val playCount: Int = 0
+    val sortOrder: Int,
+    val trackCount: Int
 )
 
 @Dao
@@ -70,14 +70,20 @@ interface PlaylistDao {
     suspend fun insertPlaylist(playlist: PlaylistEntity): Long
 
     /**
-     * Playlists ordenadas de la más escuchada a la menos:
-     * cuenta reproducciones reales del historial (history.trackKey = playlist_tracks.trackId).
+     * Playlists en orden manual (drag & drop) persistido en `sortOrder`.
+     * Desempate por fecha de creación (más recientes primero).
      */
-    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, COUNT(DISTINCT pt.trackId) AS trackCount, COUNT(h.id) AS playCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId LEFT JOIN history h ON h.trackKey = pt.trackId GROUP BY p.id ORDER BY playCount DESC, p.createdAt DESC")
+    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, p.sortOrder AS sortOrder, COUNT(DISTINCT pt.trackId) AS trackCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId GROUP BY p.id ORDER BY p.sortOrder ASC, p.createdAt DESC")
     fun observePlaylists(): LiveData<List<PlaylistWithCount>>
 
-    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, COUNT(DISTINCT pt.trackId) AS trackCount, COUNT(h.id) AS playCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId LEFT JOIN history h ON h.trackKey = pt.trackId GROUP BY p.id ORDER BY playCount DESC, p.createdAt DESC")
+    @Query("SELECT p.id AS id, p.name AS name, p.createdAt AS createdAt, p.sortOrder AS sortOrder, COUNT(DISTINCT pt.trackId) AS trackCount FROM playlists p LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId GROUP BY p.id ORDER BY p.sortOrder ASC, p.createdAt DESC")
     suspend fun getAllPlaylists(): List<PlaylistWithCount>
+
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) FROM playlists")
+    suspend fun maxSortOrder(): Int
+
+    @Query("UPDATE playlists SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, sortOrder: Int)
 
     @Query("SELECT * FROM playlists WHERE id = :id")
     suspend fun getPlaylist(id: Long): PlaylistEntity?

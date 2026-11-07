@@ -43,6 +43,18 @@ class SidebarPlaylistAdapter(
         }
     }
 
+    /** Mueve un ítem durante drag & drop (posiciones locales, sin tocar DB). */
+    fun moveItem(fromPosition: Int, toPosition: Int) {
+        if (fromPosition == toPosition) return
+        val list = currentList.toMutableList()
+        if (fromPosition !in list.indices || toPosition !in list.indices) return
+        list.add(toPosition, list.removeAt(fromPosition))
+        // submitList con copy: DiffUtil sigue reconciliando; caché de carátulas intacta.
+        submitList(list)
+    }
+
+    fun orderedIds(): List<Long> = currentList.map { it.id }
+
     fun setActive(playlistId: Long?) {
         if (activeId == playlistId) return
         val oldId = activeId

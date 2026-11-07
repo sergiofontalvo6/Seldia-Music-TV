@@ -21,6 +21,11 @@ class OfflineFragment : TableListFragment() {
         kicker(getString(R.string.kicker_library))
         headerTitle(getString(R.string.offline_title))
         requestStoragePermission { loadTracks() }
+        // Recargado reactivo: cuando Room notifica descargas/actualizaciones,
+        // la lista offline refleja el archivo local sin recarga manual.
+        container.libraryRepository.observeDownloadedTrackKeys().observe(viewLifecycleOwner) {
+            loadTracks()
+        }
     }
 
     override fun deleteAction(): ((Track) -> Unit)? = ::confirmDelete

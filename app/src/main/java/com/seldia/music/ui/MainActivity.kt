@@ -185,6 +185,50 @@ class MainActivity : AppCompatActivity() {
         b.recyclerPlaylists.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         b.recyclerPlaylists.adapter = sidebarPlaylistAdapter
 
+        // Drag & drop manual: arrastrar fila (pulsación larga) para reordenar.
+        val itemTouchHelper = androidx.recyclerview.widget.ItemTouchHelper(
+            object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+                androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN,
+                0
+            ) {
+                override fun onMove(
+                    recyclerView: androidx.recyclerview.widget.RecyclerView,
+                    viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder,
+                    target: androidx.recyclerview.widget.RecyclerView.ViewHolder
+                ): Boolean {
+                    sidebarPlaylistAdapter?.moveItem(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
+                    return true
+                }
+
+                override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) = Unit
+
+                override fun isItemViewSwipeEnabled(): Boolean = false
+
+                override fun onSelectedChanged(
+                    viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder?,
+                    actionState: Int
+                ) {
+                    super.onSelectedChanged(viewHolder, actionState)
+                    if (viewHolder != null) {
+                        viewHolder.itemView.elevation = if (actionState == androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG) {
+                            12 * resources.displayMetrics.density
+                        } else {
+                            0f
+                        }
+                    }
+                }
+
+                override fun clearView(recyclerView: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder) {
+                    super.clearView(recyclerView, viewHolder)
+                    // Persiste el nuevo orden en Room (sortOrder).
+                    sidebarPlaylistAdapter?.orderedIds()?.let { ids ->
+                        libraryVm.reorderPlaylists(ids)
+                    }
+                }
+            }
+        )
+        itemTouchHelper.attachToRecyclerView(b.recyclerPlaylists)
+
         // Filtros en fila horizontal: Listas | Artistas | Buscar.
         b.btnFilterLists.setOnClickListener {
             activeFilter = SidebarFilter.LISTAS
@@ -390,6 +434,24 @@ class MainActivity : AppCompatActivity() {
         libraryVm.favorites.observe(this) { favs ->
             desktopBinding?.tvLikedCount?.text =
                 resources.getQuantityString(R.plurals.favorite_count, favs.size, favs.size)
+            // Sincronización reactiva: si la pista en reproducción cambia de favorito
+            // en cualquier lista, el corazón del reproductor se repinta solo.
+            val currentKey = playerVm.state.value.currentTrack?.key
+            if (currentKey != null) {
+                val nowFav = favs.any { it.key == currentKey }
+                if (nowFav != isCurrentFavorite) {
+                    isCurrentFavorite = nowFav
+                    renderFavoriteButtons()
+                }
+            }
+        }
+        // Sincronización reactiva de descargas en barra/panel (Room + sesión).
+        app.container.libraryRepository.observeDownloadedTrackKeys().observe(this) { keys ->
+            val track = playerVm.state.value.currentTrack ?: return@observe
+            val tint = if (keys.contains(track.key)) accentPrimaryColor()
+            else androidx.core.content.ContextCompat.getColor(this, R.color.text_primary)
+            npBtnDownload?.setColorFilter(tint)
+            bottomBarBinding?.btnDownloadBottom?.setColorFilter(tint)
         }
     }
 

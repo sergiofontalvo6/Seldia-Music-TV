@@ -26,7 +26,9 @@ data class TrackEntity(
 data class PlaylistEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    /** Orden manual (drag & drop). A mayor valor, más abajo en la lista. */
+    val sortOrder: Int = Int.MAX_VALUE
 )
 
 @Entity(

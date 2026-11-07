@@ -61,6 +61,21 @@ class LibraryRepository(private val db: AppDatabase) {
     suspend fun markDownloaded(trackKey: String, uri: String) = trackDao.updateUri(trackKey, uri)
 
     /**
+     * Single Source of Truth para estado de descarga.
+     * Si [isDownloaded] es true, exige una URI (cache o MediaStore) y la guarda;
+     * si es false, limpia la URI. Notifica reactivamente a todos los observadores
+     * de [observeDownloadedTrackKeys] y de descargas completadas.
+     */
+    suspend fun updateDownloadStatus(trackId: String, isDownloaded: Boolean, uri: String? = null) {
+        if (isDownloaded) {
+            val finalUri = uri?.takeIf { it.isNotBlank() } ?: return
+            trackDao.updateUri(trackId, finalUri)
+        } else {
+            trackDao.updateUri(trackId, "")
+        }
+    }
+
+    /**
      * Devuelve la URI local (content://) asociada a la pista si fue descargada,
      * consultando Room. Permite que pistas encoladas desde búsqueda (que no
      * transportan la URI) sigan sonando sin conexión.
@@ -102,30 +117,45 @@ class LibraryRepository(private val db: AppDatabase) {
     suspend fun isFavorite(track: Track): Boolean = trackDao.isFavorite(track.key) ?: false
 
     suspend fun toggleFavorite(track: Track) {
-        val existing = trackDao.getById(track.key)
+        toggleFavorite(track.key, track)
+    }
+
+    /** Alterna favorito por clave (Single Source of Truth): cualquier vista que observe se repinta. */
+    suspend fun toggleFavorite(trackId: String, track: Track? = null) {
+        val existing = trackDao.getById(trackId)
         if (existing == null) {
-            trackDao.upsert(track.toEntity(isFavorite = true))
+            val entity = (track?.toEntity(isFavorite = true)) ?: return
+            trackDao.upsert(entity)
         } else {
-            trackDao.setFavorite(track.key, !existing.isFavorite)
+            trackDao.setFavorite(trackId, !existing.isFavorite)
         }
     }
 
     // ---- Playlists ----
 
     /**
-     * Playlists ordenadas de la más escuchada a la menos (orden verificado en Room:
-     * `COUNT(history) DESC, createdAt DESC`). Se pasa el orden sin reordenar aquí.
+     * Playlists en orden manual (drag & drop): Room devuelve `sortOrder ASC`.
+     * Se pasa el orden sin reordenar por reproducciones.
      */
     fun observePlaylists(): LiveData<List<Playlist>> =
         playlistDao.observePlaylists().map { list ->
-            list.map { Playlist(it.id, it.name, it.createdAt, it.trackCount, it.playCount) }
+            list.map { Playlist(it.id, it.name, it.createdAt, it.trackCount, it.sortOrder) }
         }
 
-    suspend fun createPlaylist(name: String): Long =
-        playlistDao.insertPlaylist(PlaylistEntity(name = name))
+    suspend fun createPlaylist(name: String): Long {
+        val nextOrder = playlistDao.maxSortOrder() + 1
+        return playlistDao.insertPlaylist(PlaylistEntity(name = name, sortOrder = nextOrder))
+    }
+
+    /** Persiste el orden tras soltar el arrastre (transacción en orden de lista). */
+    suspend fun reorderPlaylists(orderedIds: List<Long>) {
+        db.withTransaction {
+            orderedIds.forEachIndexed { index, id -> playlistDao.updateSortOrder(id, index) }
+        }
+    }
 
     suspend fun getPlaylists(): List<Playlist> =
-        playlistDao.getAllPlaylists().map { Playlist(it.id, it.name, it.createdAt, it.trackCount, it.playCount) }
+        playlistDao.getAllPlaylists().map { Playlist(it.id, it.name, it.createdAt, it.trackCount, it.sortOrder) }
 
     suspend fun renamePlaylist(id: Long, name: String) = playlistDao.renamePlaylist(id, name)
 
@@ -160,7 +190,8 @@ class LibraryRepository(private val db: AppDatabase) {
             .distinctBy { it.key }
         var playlistId = 0L
         db.withTransaction {
-            playlistId = playlistDao.insertPlaylist(PlaylistEntity(name = safeName))
+            val nextOrder = playlistDao.maxSortOrder() + 1
+            playlistId = playlistDao.insertPlaylist(PlaylistEntity(name = safeName, sortOrder = nextOrder))
             var position = 0
             for (track in deduped) {
                 val existing = trackDao.getById(track.key)

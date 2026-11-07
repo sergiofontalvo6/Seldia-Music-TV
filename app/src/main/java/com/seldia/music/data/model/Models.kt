@@ -40,6 +40,6 @@ data class Playlist(
     val name: String,
     val createdAt: Long,
     val trackCount: Int = 0,
-    /** Reproducciones reales del historial (para ordenar de más a menos escuchada). */
-    val playCount: Int = 0
+    /** Orden manual (drag & drop) en el panel lateral. */
+    val sortOrder: Int = Int.MAX_VALUE
 )

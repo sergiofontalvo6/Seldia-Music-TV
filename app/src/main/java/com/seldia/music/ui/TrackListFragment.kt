@@ -108,7 +108,7 @@ abstract class TrackListFragment : Fragment() {
 
     /** Entrada a selección múltiple desde el menú overflow o pulsación larga. */
     fun startSelectionMode(firstTrack: Track? = null) {
-        if (!::adapter.isInitialized) return
+        if (!isAdded || !::adapter.isInitialized) return
         adapter.setSelectionMode(true)
         if (firstTrack != null) adapter.select(firstTrack)
         val activity = requireActivity()
@@ -124,12 +124,19 @@ abstract class TrackListFragment : Fragment() {
     }
 
     private fun finishSelection() {
+        if (!isAdded && view == null) {
+            actionMode = null
+            return
+        }
         if (::adapter.isInitialized) adapter.setSelectionMode(false)
         actionMode = null
     }
 
     private fun updateSelectionTitle(count: Int) {
-        actionMode?.title = getString(R.string.selection_count, count)
+        if (!isAdded) return
+        runCatching {
+            actionMode?.title = getString(R.string.selection_count, count)
+        }
         actionMode?.subtitle = if (count == 0) null else ""
     }
 
@@ -230,6 +237,7 @@ abstract class TrackListFragment : Fragment() {
     }
 
     protected fun batchDownload(selected: List<Track>) {
+        if (!isAdded || view == null) return
         selected.forEach { promptDownloadTrack(it) }
     }
 
@@ -280,6 +288,7 @@ abstract class TrackListFragment : Fragment() {
     }
 
     protected fun promptDownloadTrack(track: Track) {
+        if (!isAdded || view == null) return
         // Descarga directa y silenciosa: SOLO audio (M4A), sin diálogo de formato.
         // Sin conexión no hay transferencia posible; en modo automático/offline
         // tampoco se procesa vídeo jamás.
@@ -347,13 +356,9 @@ abstract class TrackListFragment : Fragment() {
 
     /** Observa las pistas ya descargadas y persistidas en Room para mostrar el estado rojo en las listas. */
     protected fun observeDownloadedKeys() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                container.libraryRepository.observeDownloadedTrackKeys().observe(viewLifecycleOwner) { keys ->
-                    if (::adapter.isInitialized) {
-                        adapter.updateDownloadedKeys(keys)
-                    }
-                }
+        libraryVm.downloadedKeys.observe(viewLifecycleOwner) { keys ->
+            if (::adapter.isInitialized) {
+                adapter.updateDownloadedKeys(keys)
             }
         }
     }

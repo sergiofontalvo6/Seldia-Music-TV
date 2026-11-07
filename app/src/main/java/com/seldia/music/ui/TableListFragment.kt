@@ -143,6 +143,7 @@ abstract class TableListFragment : TrackListFragment() {
     }
 
     override fun onDestroyView() {
+        runCatching { finishSelectionMode() }
         super.onDestroyView()
         _binding = null
     }
