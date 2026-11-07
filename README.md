@@ -1,7 +1,7 @@
 # SELDIA MUSIC
 
-Aplicación musical completa para Android, con diseño **Dark Glassmorphism** y panel de reproductor integrado estilo "Sonando ahora", pensada para **radios Android / head units (WJ/Wonjan AC8227L, Android 8.1, 1 GB RAM, 1280×720, horizontal)** y teléfonos.
-
+Aplicación musical completa para Android, con diseño **Dark Glassmorphism** y panel de reproductor integrado estilo "Sonando ahora", pensada para **radios Android / Android 8.1, 1 GB RAM, 1280×720, horizontal)** 
+**Una alternativa a Youtube y Spotify ligera para radios android, Ver videos y Escuchar musica fluida** 
 **Sin publicidad propia.** Cero SDKs publicitarios, cero banners, cero rastreadores.
 
 ---
