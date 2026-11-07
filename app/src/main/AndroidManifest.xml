@@ -65,7 +65,13 @@
 
         <receiver
             android:name=".playback.PlaybackActionReceiver"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.seldia.music.action.PLAY_PAUSE" />
+                <action android:name="com.seldia.music.action.NEXT" />
+                <action android:name="com.seldia.music.action.PREVIOUS" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"
