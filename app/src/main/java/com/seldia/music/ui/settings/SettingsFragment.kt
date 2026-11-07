@@ -14,6 +14,7 @@ import com.seldia.music.SeldiaApp
 import com.seldia.music.databinding.FragmentSettingsBinding
 import com.seldia.music.util.OfflinePrefs
 import com.seldia.music.util.ThemePrefs
+import com.seldia.music.data.update.UpdateCheck
 import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
@@ -96,6 +97,8 @@ class SettingsFragment : Fragment() {
         binding.btnSpotifyTxt.setOnClickListener {
             spotifyTxtLauncher.launch(arrayOf("text/plain"))
         }
+
+        binding.btnUpdateCheck.setOnClickListener { checkForUpdate() }
 
         setupPersonalization()
     }
@@ -318,6 +321,99 @@ class SettingsFragment : Fragment() {
                 Toast.makeText(requireContext(), text, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun checkForUpdate() {
+        setUpdateBusy(true, getString(R.string.update_checking))
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = UpdateCheck.fetchLatestRelease()
+            setUpdateBusy(false, "")
+            if (!isAdded) return@launch
+            val release = result.getOrNull()
+            val current = com.seldia.music.BuildConfig.VERSION_NAME
+            if (release == null) {
+                val msg = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
+                    ?: getString(R.string.update_failed)
+                binding.tvUpdateStatus.text = msg
+                return@launch
+            }
+            if (!UpdateCheck.isVersionNewer(release.version, current)) {
+                binding.tvUpdateStatus.text = getString(R.string.update_up_to_date, current)
+                return@launch
+            }
+            showUpdateDialog(release)
+        }
+    }
+
+    private fun showUpdateDialog(release: UpdateCheck.ReleaseInfo) {
+        val ctx = requireContext()
+        val current = com.seldia.music.BuildConfig.VERSION_NAME
+        androidx.appcompat.app.AlertDialog.Builder(ctx)
+            .setTitle(getString(R.string.update_available_title))
+            .setMessage(getString(R.string.update_available_message, release.version, current))
+            .setPositiveButton(getString(R.string.update_download)) { _, _ ->
+                downloadAndInstall(release)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun downloadAndInstall(release: UpdateCheck.ReleaseInfo) {
+        val ctx = requireActivity()
+        val progress = android.widget.ProgressBar(ctx).apply {
+            isIndeterminate = false
+            max = 100
+        }
+        val status = android.widget.TextView(ctx).apply {
+            text = getString(R.string.update_downloading, "0", "0")
+            textSize = 12f
+        }
+        val container = android.widget.LinearLayout(ctx).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+            addView(progress)
+            addView(status)
+        }
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(ctx)
+            .setTitle(getString(R.string.update_download))
+            .setView(container)
+            .setCancelable(false)
+            .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
+            .show()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = UpdateCheck.downloadApk(release) { downloaded, total ->
+                binding.root.post {
+                    if (_binding == null) return@post
+                    val mbDown = "%.1f".format(downloaded / 1_000_000.0)
+                    val mbTotal = if (total > 0) "%.1f".format(total / 1_000_000.0) else "?"
+                    status.text = getString(R.string.update_downloading, mbDown, mbTotal)
+                    if (total > 0) {
+                        progress.progress = ((downloaded * 100L) / total).toInt()
+                    }
+                }
+            }
+            dialog.dismiss()
+            if (!isAdded) return@launch
+            val apk = result.getOrNull()
+            if (apk == null) {
+                binding.tvUpdateStatus.text = getString(R.string.update_download_failed)
+                return@launch
+            }
+            binding.tvUpdateStatus.text = getString(R.string.update_installed)
+            runCatching {
+                startActivity(UpdateCheck.installIntent(requireContext(), apk))
+            }.onFailure {
+                binding.tvUpdateStatus.text = getString(R.string.update_download_failed)
+            }
+        }
+    }
+
+    private fun setUpdateBusy(busy: Boolean, statusText: String) {
+        binding.btnUpdateCheck.isEnabled = !busy
+        if (busy) binding.progressUpdate.visibility = View.VISIBLE else binding.progressUpdate.visibility = View.GONE
+        if (statusText.isNotEmpty()) binding.tvUpdateStatus.text = statusText
     }
 
     override fun onDestroyView() {

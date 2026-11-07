@@ -162,6 +162,21 @@
     <string name="spotify_txt_empty">El archivo no contiene enlaces de Spotify</string>
     <string name="spotify_txt_done">Archivo importado: %1$d listas (%2$d fallidas)</string>
 
+    <!-- Actualización OTA (GitHub Releases) -->
+    <string name="settings_update">Actualización</string>
+    <string name="settings_update_desc">Comprobar nueva versión en GitHub</string>
+    <string name="update_check">Buscar actualizaciones</string>
+    <string name="update_checking">Comprobando…</string>
+    <string name="update_up_to_date">Ya estás en la última versión (%1$s)</string>
+    <string name="update_available_title">Nueva versión disponible</string>
+    <string name="update_available_message">Versión %1$s disponible (actual %2$s).</string>
+    <string name="update_download">Descargar e instalar</string>
+    <string name="update_downloading">Descargando APK… %1$d/%2$d MB</string>
+    <string name="update_installed">Abriendo instalador…</string>
+    <string name="update_no_assets">La release no incluye un APK adjunto (.apk). Revisa GitHub.</string>
+    <string name="update_failed">No se pudo comprobar la actualización. Revisa tu conexión.</string>
+    <string name="update_download_failed">No se pudo descargar el APK. Revisa tu conexión.</string>
+
     <!-- Personalización (tema + acento) -->
     <string name="settings_personalization">Personalización</string>
     <string name="settings_theme">Modo de apariencia</string>

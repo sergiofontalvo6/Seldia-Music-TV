@@ -12,6 +12,7 @@ class SeldiaApp : Application() {
         super.onCreate()
         com.seldia.music.util.OfflinePrefs.init(this)
         com.seldia.music.util.ThemePrefs.init(this)
+        com.seldia.music.data.update.UpdateCheck.init(this)
         container = AppContainer(this)
     }
 }
