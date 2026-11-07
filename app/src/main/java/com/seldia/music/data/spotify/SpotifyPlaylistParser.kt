@@ -2,8 +2,11 @@ package com.seldia.music.data.spotify
 
 import android.util.Log
 import com.google.gson.JsonParser
+import com.seldia.music.data.network.ApiException
+import com.seldia.music.data.network.NetworkError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -98,11 +101,13 @@ object SpotifyPlaylistParser {
         }
         try {
             val code = connection.responseCode
-            if (code != 200) throw java.io.IOException("Spotify respondió $code")
+            if (code != 200) throw ApiException(code, NetworkError.classify(IOException("HTTP $code")).second)
             val input = connection.inputStream
             val text = input.bufferedReader(Charsets.UTF_8).use { it.readText() }
             Log.d(TAG, "Fetched ${url.take(40)} len=${text.length}")
             return text
+        } catch (e: java.io.IOException) {
+            throw NetworkError.toApiException(e)
         } finally {
             connection.disconnect()
         }

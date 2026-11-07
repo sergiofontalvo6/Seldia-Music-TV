@@ -7,6 +7,7 @@ import androidx.core.content.FileProvider
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.seldia.music.data.network.NetworkErrorInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -37,11 +38,13 @@ object UpdateCheck {
     )
 
     private val client = OkHttpClient.Builder()
+        .addInterceptor(NetworkErrorInterceptor())
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
     private val downloadClient = OkHttpClient.Builder()
+        .addInterceptor(NetworkErrorInterceptor())
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
         .build()
@@ -56,11 +59,16 @@ object UpdateCheck {
                 .build()
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) {
-                val err = response.body?.string().orEmpty()
-                throw IOException("GitHub API ${response.code}: ${err.take(200)}")
+                val code = response.code
+                response.close()
+                throw com.seldia.music.data.network.NetworkError.toApiException(
+                    java.io.IOException("HTTP $code")
+                )
             }
             val jsonText = response.body?.string()
-                ?: throw IOException("Respuesta vacía")
+                ?: throw com.seldia.music.data.network.NetworkError.toApiException(
+                    java.io.IOException("Respuesta vacía")
+                )
             Log.d(TAG, "Release payload: ${jsonText.take(300)}")
             parseRelease(jsonText)
         }

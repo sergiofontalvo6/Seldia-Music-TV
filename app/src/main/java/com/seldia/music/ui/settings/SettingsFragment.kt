@@ -312,13 +312,14 @@ class SettingsFragment : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
             } else {
-                val message = result.exceptionOrNull()?.message
-                val text = if (message.isNullOrBlank()) {
-                    getString(R.string.spotify_import_failed)
+                val error = result.exceptionOrNull()
+                val text = if (error != null) {
+                    com.seldia.music.ui.NetworkUi.messageFor(error)
                 } else {
-                    message
+                    getString(R.string.spotify_import_failed)
                 }
-                Toast.makeText(requireContext(), text, Toast.LENGTH_LONG).show()
+                com.seldia.music.ui.NetworkUi.friendlySnackbar(binding.root, text)
+                    ?.run { } ?: Toast.makeText(requireContext(), text, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -332,8 +333,12 @@ class SettingsFragment : Fragment() {
             val release = result.getOrNull()
             val current = com.seldia.music.BuildConfig.VERSION_NAME
             if (release == null) {
-                val msg = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
-                    ?: getString(R.string.update_failed)
+                val error = result.exceptionOrNull()
+                val msg = if (error != null) {
+                    com.seldia.music.ui.NetworkUi.messageFor(error)
+                } else {
+                    getString(R.string.update_failed)
+                }
                 binding.tvUpdateStatus.text = msg
                 return@launch
             }
@@ -398,7 +403,12 @@ class SettingsFragment : Fragment() {
             if (!isAdded) return@launch
             val apk = result.getOrNull()
             if (apk == null) {
-                binding.tvUpdateStatus.text = getString(R.string.update_download_failed)
+                val error = result.exceptionOrNull()
+                binding.tvUpdateStatus.text = if (error != null) {
+                    com.seldia.music.ui.NetworkUi.messageFor(error)
+                } else {
+                    getString(R.string.update_download_failed)
+                }
                 return@launch
             }
             binding.tvUpdateStatus.text = getString(R.string.update_installed)

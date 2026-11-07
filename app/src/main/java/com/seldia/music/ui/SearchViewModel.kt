@@ -44,7 +44,8 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
                     container.youtubeRepository.search(query)
                         .onSuccess { _results.value = it }
                         .onFailure { e ->
-                            _message.value = e.message ?: "No se pudo buscar en YouTube"
+                            // Interceptor centralizado ya entrega mensajes amigables; sin códigos crudos.
+                            _message.value = com.seldia.music.data.network.NetworkError.friendlyMessage(e)
                             _results.value = emptyList()
                         }
                 } else {

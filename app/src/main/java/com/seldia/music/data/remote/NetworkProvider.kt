@@ -1,6 +1,7 @@
 package com.seldia.music.data.remote
 
 import com.seldia.music.BuildConfig
+import com.seldia.music.data.network.NetworkErrorInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -21,6 +22,7 @@ object NetworkProvider {
             }
         }
         OkHttpClient.Builder()
+            .addInterceptor(NetworkErrorInterceptor())
             .addInterceptor(logging)
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(25, TimeUnit.SECONDS)

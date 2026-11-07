@@ -328,7 +328,9 @@ class MediaDownloadManager(
                         else -> false
                     }
                 } else {
-                    throw IOException("HTTP $code al descargar ${url.take(120)}")
+                    throw com.seldia.music.data.network.NetworkError.toApiException(
+                        java.io.IOException("HTTP $code al descargar ${url.take(120)}")
+                    )
                 }
             } catch (t: Throwable) {
                 lastError = t
