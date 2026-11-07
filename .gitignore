@@ -1,6 +1,6 @@
 *.iml
 .gradle/
-/local.properties
+ /local.properties
 /.idea/
 .DS_Store
 /build
@@ -11,3 +11,9 @@
 *.aab
 app/build/
 local.properties
+# Logs y volcados de sesión de desarrollo
+/*.txt
+/*.log
+/window.xml
+# Artefactos intermedios de buildSrc (plugins Gradle)
+buildSrc/build/

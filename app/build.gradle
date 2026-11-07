@@ -8,7 +8,6 @@ plugins {
 // Credenciales opcionales (nunca se escriben secretos en Git).
 // Se leen desde variables de entorno o desde gradle.properties local.
 def youtubeApiKey = System.getenv("SELDIA_YOUTUBE_API_KEY") ?: (project.findProperty("youtube.api.key") ?: "")
-def spotifyClientId = System.getenv("SELDIA_SPOTIFY_CLIENT_ID") ?: (project.findProperty("spotify.client.id") ?: "")
 
 android {
     namespace 'com.seldia.music'
@@ -22,8 +21,6 @@ android {
         versionName "1.0.0"
 
         buildConfigField "String", "YOUTUBE_API_KEY", "\"${youtubeApiKey}\""
-        buildConfigField "String", "SPOTIFY_CLIENT_ID", "\"${spotifyClientId}\""
-        buildConfigField "String", "SPOTIFY_REDIRECT_URI", "\"com.seldia.music://callback\""
 
         vectorDrawables.useSupportLibrary = true
     }

@@ -1,1 +1,0 @@
-FINDSTR: No se puede abrir FATAL\ logcat_full.txt  

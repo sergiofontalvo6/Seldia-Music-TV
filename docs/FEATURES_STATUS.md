@@ -1,5 +1,8 @@
 # Estado de funcionalidades — SELDIA MUSIC
 
+> Documento histórico: refleja la base inicial. La funcionalidad actual (listas .txt,
+> filtros laterales, Glass, R8) está descrita en [README](../README.md).
+
 ## Terminadas (probadas)
 
 1. ✅ Interfaz moderna oscura (tema oscuro, dos paneles en horizontal, nav inferior).
