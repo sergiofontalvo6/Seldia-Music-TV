@@ -153,8 +153,7 @@ object UpdateCheck {
     fun installIntent(context: Context, apkFile: File): Intent {
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", apkFile)
         return Intent(Intent.ACTION_VIEW).apply {
-            data = uri
-            type = "application/vnd.android.package-archive"
+            setDataAndType(uri, "application/vnd.android.package-archive")
             addCategory(Intent.CATEGORY_DEFAULT)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
