@@ -1,7 +1,7 @@
 # Seldia Music TV
 
-**El reproductor de música y video para Android TV con control remoto.**  
-HTML: sidebar de navegación, tabla central de pistas y panel «Sonando ahora» en 3 columnas, foco D-pad con cristal del color de acento y pantalla completa de video navegable.
+**El reproductor de música y video para Android TV con control remoto.**
+Sidebar de navegación, tabla central de pistas y panel «Sonando ahora» en 3 columnas, foco D-pad con cristal del color de acento y pantalla completa de video navegable.
 
 ![TV](docs/screenshots/01-main.png)
 
@@ -18,7 +18,7 @@ HTML: sidebar de navegación, tabla central de pistas y panel «Sonando ahora» 
 
 ## Qué es
 
-Seldia Music TV es una alternativa ligera a YouTube/Spotify para televisores: busca en YouTube vía **NewPipe Extractor** (sin credenciales), reproduce con **Media3/ExoPlayer**, importa listas públicas de **Spotify** (enlace o `.txt`), guarda favoritos/playlists/historial en **Room**, sincroniza letras con karaoke y se actualiza por OTA desde GitHub Releases.
+Seldia Music TV es una alternativa ligera para televisores: accede a **millones de canciones** sin credenciales, reproduce con **Media3/ExoPlayer**, importa listas públicas (enlace o `.txt`), guarda favoritos/playlists/historial en **Room**, sincroniza letras con karaoke y se actualiza por OTA desde GitHub Releases.
 
 **Sin publicidad propia.** Cero SDKs publicitarios, cero banners, cero rastreadores.
 
@@ -38,9 +38,9 @@ Seldia Music TV es una alternativa ligera a YouTube/Spotify para televisores: bu
 | **3 paneles en horizontal + barra inferior flotante** (video sin pantalla negra, audio/vídeo en el panel derecho) | ✅ |
 | **Foco D-pad universal** (cristal del tema en cualquier control, sin recorte, sin selecciones atascadas) | ✅ |
 | **Video fullscreen con barra flotante navegable** y minimizar por CENTER/Atrás | ✅ |
-| Búsqueda YouTube vía NewPipe (`ALL`, no solo música), sin API key | ✅ |
+| Búsqueda de **millones de canciones**, sin credenciales | ✅ |
 | Reproducción Media3 (cola, shuffle, repeat, MediaSession, notificación, letras) | ✅ |
-| Importar Spotify: enlace público **o** `Download/list-spotify.txt` (un enlace por línea) → Room | ✅ |
+| Importar listas: enlace público **o** archivo `.txt` (un enlace por línea) → Room | ✅ |
 | Favoritos / Playlists / Historial (renombrar, borrar, vaciar) | ✅ |
 | Copia de seguridad/restauración JSON (SAF) | ✅ |
 | Temas: Oscuro / Claro / Glass + 8 acentos (todo el highlight sigue al acento) | ✅ |
@@ -56,7 +56,7 @@ Seldia Music TV es una alternativa ligera a YouTube/Spotify para televisores: bu
 - **JDK 17** (Temurin) — `JAVA_HOME` a JDK 17 (el JDK del sistema puede ser más nuevo).
 - Android SDK platform 34 + build-tools, Gradle 8.9 (wrapper incluido).
 - TVs Android con **Depuración ADB activada** para las pruebas locales.
-- YouTube funciona **sin credenciales** vía NewPipe (API Data v3 opcional vía `SELDIA_YOUTUBE_API_KEY`, no versionada).
+- Motor de búsqueda integrado, **sin credenciales**.
 
 ## Compilar
 
@@ -77,53 +77,19 @@ Release ofuscado → `app/build/outputs/apk/release/app-release-unsigned.apk`
 
 - `minSdk 27` (Android 8.1), `targetSdk 34`, optimizado para 1 GB de RAM.
 
-## Instalar y probar en tus TVs (ADB inalámbrico)
-
-| TV | IP |
-|:---|:---:|
-| TV1 — 4K Google TV Stick | `192.168.100.129` |
-| TV2 — Claro STB | `192.168.100.177` |
-
-Activá **Depuración ADB** en cada TV y aceptá la huella RSA al primer `connect`.
-
-```bat
-install_tv.bat            REM compila e instala en ambas (TV1+TV2)
-install_tv.bat tv1        REM solo 192.168.100.129
-install_tv.bat tv2        REM solo 192.168.100.177
-```
-
-Manual:
-
-```bat
-adb connect 192.168.100.129
-adb -s 192.168.100.129:5555 install -r app\build\outputs\apk\debug\app-debug.apk
-adb connect 192.168.100.177
-adb -s 192.168.100.177:5555 install -r app\build\outputs\apk\debug\app-debug.apk
-adb -s 192.168.100.129:5555 shell am start -n com.seldia.music/.ui.MainActivity
-```
-
-Scripts: `install_tv.bat`, `install_tv.ps1` (`-Target both|tv1|tv2`), `install_tv.sh`, y tareas Gradle `:app:installTvDebug`, `:app:installTv1Debug`, `:app:installTv2Debug`.
-
-### Listas de Spotify desde `Download/`
-```bat
-adb -s 192.168.100.129:5555 push "C:\Users\SBXALOGON\Desktop\list-spotify.txt" /sdcard/Download/
-adb -s 192.168.100.177:5555 push "C:\Users\SBXALOGON\Desktop\list-spotify.txt" /sdcard/Download/
-```
-En la TV: **Ajustes → Importar lista de Spotify → Importar desde archivo (.txt)** → elegí `Download/list-spotify.txt` con el mando (un enlace por línea, ignora `?si=…`).
-
 ## Arquitectura
 
 ```
 app/src/main/java/com/seldia/music/
 ├── SeldiaApp.kt               # Application
 ├── di/AppContainer.kt         # DI manual (sin Hilt)
-├── data/ (model, db Room, network, extractor NewPipe, spotify, backup, repository)
+├── data/ (model, db Room, network, extractor, lists, backup, repository)
 ├── playback/                  # MusicPlayer StateFlow + PlaybackService
 └── ui/
     ├── MainActivity.kt        # Shell 3 paneles TV + TvFocusHelper (cristal del tema)
     ├── TvFocusHelper.kt       # Foco cristal universal con estado
     ├── adapters/ home/ library/ queue/ search/ settings/ player/
-    └── youtube/               # YouTubePlayerActivity
+    └── player/                # Pantalla completa
 ```
 
 ---
