@@ -747,9 +747,11 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun updatePlaybackUi(s: PlayerState) {
-        // TV: pantalla siempre encendida mientras suena (anti apagado inactivo)
-        if (s.isPlaying) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        // TV: pantalla siempre encendida mientras suena o bufferiza (anti apagado inactivo)
+        val keepOn = s.isPlaying || s.isBuffering
+        if (keepOn) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        android.util.Log.d("SeldiaTV", "keepScreen=$keepOn track=${s.currentTrack?.title}")
         val bar = bottomBarBinding
         val track = s.currentTrack
 
