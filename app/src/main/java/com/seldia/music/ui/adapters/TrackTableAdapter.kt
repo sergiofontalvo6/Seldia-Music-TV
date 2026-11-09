@@ -13,7 +13,6 @@ import com.seldia.music.R
 import com.seldia.music.data.model.Source
 import com.seldia.music.data.model.Track
 import com.seldia.music.databinding.ItemTrackTableBinding
-import com.seldia.music.playback.DownloadStatus
 import com.seldia.music.util.accentPrimaryColor
 import com.seldia.music.util.formatDuration
 
@@ -30,7 +29,6 @@ class TrackTableAdapter(
     private val onAddToQueue: (Track) -> Unit,
     private val onAddToPlaylist: (Track) -> Unit,
     private val onRemove: ((Track, Int) -> Unit)? = null,
-    private val onDownload: ((Track) -> Unit)? = null,
     private val onDeleteLocal: ((Track) -> Unit)? = null,
     private val onRequestSelectionMode: (Track) -> Unit = {},
     private val onSelectionChanged: (Set<String>) -> Unit = {},
@@ -38,8 +36,6 @@ class TrackTableAdapter(
 ) : ListAdapter<Track, TrackTableAdapter.VH>(TrackDiffCallback()) {
 
     private var favoriteKeys: Set<String> = emptySet()
-    private var downloadStates: Map<String, DownloadStatus> = emptyMap()
-    private var downloadedKeys: Set<String> = emptySet()
     private var playingKey: String? = null
 
     /** Modo de selección múltiple (checkboxes visibles). */
@@ -90,21 +86,6 @@ class TrackTableAdapter(
         notifyRelatedPositions(changed)
     }
 
-    fun updateDownloadStates(states: Map<String, DownloadStatus>) {
-        val changed = (downloadStates.keys + states.keys)
-            .filter { key -> downloadStates[key] != states[key] }
-            .toSet()
-        downloadStates = states
-        notifyRelatedPositions(changed)
-    }
-
-    /** Claves de pistas ya descargadas y persistidas en Room (disponibles offline). */
-    fun updateDownloadedKeys(keys: Set<String>) {
-        val changed = downloadedKeys.symmetricDiff(keys)
-        downloadedKeys = keys
-        notifyRelatedPositions(changed)
-    }
-
     /** Resalta la fila que está sonando. */
     fun setPlayingKey(key: String?) {
         if (playingKey == key) return
@@ -144,17 +125,6 @@ class TrackTableAdapter(
     private fun Track.isFavoriteState(): Boolean =
         key in favoriteKeys || linkedKeys.any { it in favoriteKeys }
 
-    private fun Track.downloadStateOrIdle(): DownloadStatus {
-        downloadStates[key]?.let { return it }
-        return linkedKeys.firstNotNullOfOrNull { downloadStates[it] } ?: DownloadStatus.Idle
-    }
-
-    private fun Track.hasDownloadedFile(): Boolean =
-        source == Source.LOCAL ||
-            uri?.isNotBlank() == true ||
-            key in downloadedKeys ||
-            linkedKeys.any { it in downloadedKeys }
-
     private fun Set<String>.symmetricDiff(other: Set<String>): Set<String> =
         (this - other) + (other - this)
 
@@ -164,6 +134,11 @@ class TrackTableAdapter(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(getItem(position), position)
+
+    override fun onViewRecycled(holder: VH) {
+        com.seldia.music.ui.TvFocusHelper.resetItem(holder.itemView)
+        super.onViewRecycled(holder)
+    }
 
     override fun onBindViewHolder(
         holder: VH,
@@ -217,25 +192,7 @@ class TrackTableAdapter(
                 crossfade(false)
             }
 
-            val canDownload = onDownload != null
-            if (!canDownload) {
-                binding.btnDownload.visibility = View.GONE
-                binding.progressDownload.visibility = View.GONE
-            } else {
-                val status = track.downloadStateOrIdle()
-                val isDownloaded = track.hasDownloadedFile()
-                val isBusy = status is DownloadStatus.Preparing || status is DownloadStatus.Downloading
-
-                binding.btnDownload.visibility = if (isBusy) View.GONE else View.VISIBLE
-                binding.progressDownload.visibility = if (isBusy) View.VISIBLE else View.GONE
-
-                // Flecha/estado en color de acento cuando la pista ya está descargada.
-                binding.btnDownload.setColorFilter(
-                    if (isDownloaded) binding.root.context.accentPrimaryColor() else ContextCompat.getColor(
-                        binding.root.context, R.color.text_secondary
-                    )
-                )
-            }
+            // TV: sin opción de descarga de música (solo streaming).
 
             binding.root.setOnClickListener {
                 if (selectionMode) toggleSelection(track) else onClick(track, position)
@@ -256,7 +213,6 @@ class TrackTableAdapter(
                 false
             }
             binding.btnFavorite.setOnClickListener { onFavoriteToggle(track) }
-            binding.btnDownload.setOnClickListener { onDownload?.invoke(track) }
             binding.btnMore.setOnClickListener { showMenu(it, track) }
         }
 
@@ -269,9 +225,6 @@ class TrackTableAdapter(
                 0, MENU_FAVORITE, 2,
                 if (isFav) R.string.remove_favorite else R.string.add_favorite
             )
-            if (onDownload != null && track.source == Source.YOUTUBE) {
-                popup.menu.add(0, MENU_DOWNLOAD, 3, R.string.download_track)
-            }
             if (onRemove != null) {
                 popup.menu.add(0, MENU_REMOVE, 4, R.string.remove_from_playlist)
             }
@@ -283,7 +236,6 @@ class TrackTableAdapter(
                     MENU_QUEUE -> onAddToQueue(track)
                     MENU_PLAYLIST -> onAddToPlaylist(track)
                     MENU_FAVORITE -> onFavoriteToggle(track)
-                    MENU_DOWNLOAD -> onDownload?.invoke(track)
                     MENU_REMOVE -> onRemove?.invoke(track, bindingAdapterPosition)
                     MENU_DELETE -> onDeleteLocal?.invoke(track)
                 }
@@ -298,7 +250,6 @@ class TrackTableAdapter(
         const val MENU_PLAYLIST = 2
         const val MENU_FAVORITE = 3
         const val MENU_REMOVE = 4
-        const val MENU_DOWNLOAD = 5
         const val MENU_DELETE = 6
     }
 

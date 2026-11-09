@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Seldia Music TV: textos exclusivos de la edición TV -->
+    <string name="tv_brand_title">Seldia Music TV</string>
+    <string name="tv_edition">TV EDITION · ANDROID TV</string>
+    <string name="tv_dpad_hint">Usa el control remoto: ↑ ↓ ← → para navegar · OK para seleccionar · Atrás para volver</string>
+    <string name="tv_focused">Enfocado</string>
+    <string name="prev_track_desc">Pista anterior</string>
+    <string name="next_track_desc">Pista siguiente</string>
+    <string name="repeat_desc">Repetir</string>
+    <string name="queue_desc">Cola de reproduccion</string>
+</resources>

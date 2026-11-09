@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Escala sutil al recibir foco en TV (1.04x) para reforzar feedback D-pad -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:orientation="horizontal">
+    <scale
+        android:fromXScale="1.0"
+        android:fromYScale="1.0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:toXScale="1.04"
+        android:toYScale="1.04"
+        android:duration="120" />
+</set>

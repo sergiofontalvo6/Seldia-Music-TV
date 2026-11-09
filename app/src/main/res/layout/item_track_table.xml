@@ -3,30 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_track_row"
+    android:background="@drawable/bg_tv_focus_row"
+    android:layout_margin="4dp"
     android:clickable="true"
+
     android:focusable="true"
+    android:focusableInTouchMode="false"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingEnd="6dp"
-    android:paddingTop="7dp"
-    android:paddingBottom="7dp">
+    android:paddingStart="8dp"
+    android:paddingEnd="4dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
     <TextView
         android:id="@+id/tv_index"
-        android:layout_width="28dp"
+        android:layout_width="18dp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:textColor="@color/text_secondary"
-        android:textSize="12sp" />
+        android:textSize="11sp" />
 
     <ImageView
         android:id="@+id/iv_drag_handle"
-        android:layout_width="16dp"
+        android:layout_width="0dp"
         android:layout_height="28dp"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="2dp"
+        android:layout_marginStart="4dp"
         android:contentDescription="@null"
         android:src="@drawable/ic_drag_handle"
         android:tint="@color/text_secondary" />
@@ -41,9 +44,9 @@
         android:visibility="gone" />
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="4dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="6dp"
         app:cardBackgroundColor="@color/surface_high"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp"
@@ -61,7 +64,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
         android:layout_weight="1.5"
         android:orientation="vertical">
 
@@ -72,14 +75,14 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_primary"
-            android:textSize="13.5sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tv_artist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_secondary"
@@ -88,47 +91,34 @@
 
     <TextView
         android:id="@+id/tv_duration"
-        android:layout_width="46dp"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:gravity="end"
         android:textColor="@color/text_secondary"
-        android:textSize="12sp" />
+        android:textSize="11sp" />
 
     <ImageButton
         android:id="@+id/btn_favorite"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginStart="2dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_width="18dp"
+        android:layout_height="28dp"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/bg_tv_focus_pill"
         android:contentDescription="@null"
+        android:focusable="true"
+        android:focusableInTouchMode="false"
         android:src="@drawable/ic_favorite"
         android:tint="@color/text_secondary" />
 
-    <ImageButton
-        android:id="@+id/btn_download"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/download_track"
-        android:src="@drawable/ic_download"
-        android:tint="@color/text_secondary" />
 
-    <ProgressBar
-        android:id="@+id/progress_download"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        style="android:attr/progressBarStyleSmall" />
 
     <ImageButton
         android:id="@+id/btn_more"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_width="18dp"
+        android:layout_height="28dp"
+        android:background="@drawable/bg_tv_focus_pill"
         android:contentDescription="@null"
+        android:focusable="true"
+        android:focusableInTouchMode="false"
         android:src="@drawable/ic_more"
         android:tint="@color/text_secondary" />
 </LinearLayout>

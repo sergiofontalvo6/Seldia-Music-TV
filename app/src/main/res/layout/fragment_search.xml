@@ -40,11 +40,13 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="10dp"
-            android:background="@drawable/bg_glass_pill"
+            android:background="@drawable/bg_tv_focus_pill"
             android:contentDescription="@string/voice_search"
             android:padding="12dp"
             android:src="@drawable/ic_mic"
-            android:tint="?attr/accentPrimary" />
+            android:tint="?attr/accentPrimary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
     </LinearLayout>
 
     <TextView

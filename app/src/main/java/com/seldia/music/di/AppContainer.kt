@@ -10,7 +10,6 @@ import com.seldia.music.data.offline.OfflineMusicRepository
 import com.seldia.music.data.repository.LibraryRepository
 import com.seldia.music.data.repository.LyricsRepository
 import com.seldia.music.data.repository.YouTubeRepository
-import com.seldia.music.playback.MediaDownloadManager
 import com.seldia.music.playback.MusicPlayer
 
 /**
@@ -45,19 +44,6 @@ class AppContainer(context: Context) {
 
     val lyricsRepository: LyricsRepository by lazy {
         LyricsRepository()
-    }
-
-    val mediaDownloadManager: MediaDownloadManager by lazy {
-        MediaDownloadManager(
-            context = appContext,
-            youtubeRepository = youtubeRepository,
-            network = networkConnectivityManager,
-            onAudioDownloaded = { track, uri ->
-                // Enlaza el archivo de audio descargado con la pista en Room:
-                // favoritos/playlists/historial quedan disponibles offline.
-                runCatching { libraryRepository.markDownloaded(track.key, uri.toString()) }
-            }
-        )
     }
 
     val backupManager: BackupManager by lazy {

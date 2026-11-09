@@ -63,7 +63,6 @@ class HomeFragment : TrackListFragment() {
     private fun submitCards() {
         cardsAdapter.submit(
             listOf(
-                HomeCard(Type.OFFLINE, getString(R.string.card_offline_subtitle)),
                 HomeCard(Type.FAVORITES, resources.getQuantityString(R.plurals.favorite_count, favoritesCount, favoritesCount)),
                 HomeCard(Type.PLAYLISTS, resources.getQuantityString(R.plurals.playlist_count, playlistsCount, playlistsCount))
             )
@@ -73,7 +72,6 @@ class HomeFragment : TrackListFragment() {
     private fun onCardClick(card: HomeCard) {
         val main = activity as? MainActivity ?: return
         when (card.type) {
-            Type.OFFLINE -> main.openOfflineMusic()
             Type.FAVORITES -> main.openLibrary(1)
             Type.PLAYLISTS -> main.openLibrary(0)
         }

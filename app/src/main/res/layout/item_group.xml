@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_track_row"
+    android:background="@drawable/bg_tv_focus_row"
     android:clickable="true"
     android:focusable="true"
+    android:focusableInTouchMode="false"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="18dp"
+    android:paddingStart="12dp"
     android:paddingEnd="14dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="48dp"
@@ -46,7 +47,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_primary"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
@@ -55,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
     </LinearLayout>
 
     <ImageView

@@ -9,10 +9,6 @@
         android:icon="@drawable/ic_add"
         android:title="@string/add_selected_to_playlist" />
     <item
-        android:id="@+id/action_download_selected"
-        android:icon="@drawable/ic_download"
-        android:title="@string/download_selected" />
-    <item
         android:id="@+id/action_fav_toggle"
         android:icon="@drawable/ic_favorite"
         android:title="@string/fav_selected" />

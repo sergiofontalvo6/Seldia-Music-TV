@@ -3,13 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
+    android:descendantFocusability="afterDescendants"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/tv_greeting"
@@ -17,14 +18,14 @@
             android:layout_height="wrap_content"
             android:text="@string/home_greeting"
             android:textColor="@color/text_primary"
-            android:textSize="26sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tv_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:text="@string/home_subtitle"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
@@ -33,16 +34,21 @@
             android:id="@+id/cards"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="12dp"
             android:clipToPadding="false"
+
+            android:descendantFocusability="afterDescendants"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
             android:nestedScrollingEnabled="false"
             android:orientation="horizontal"
+            android:padding="6dp"
             android:overScrollMode="never" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="32dp"
             android:text="@string/favorites"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
@@ -50,17 +56,24 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
+            android:nextFocusDown="@+id/btn_play_pause"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false" />
+            android:layout_marginTop="10dp"
+            android:clipToPadding="false"
+
+            android:descendantFocusability="afterDescendants"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:nestedScrollingEnabled="false"
+            android:padding="8dp" />
 
         <TextView
             android:id="@+id/empty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:padding="24dp"
+            android:padding="20dp"
             android:text="@string/no_favorites"
             android:textColor="@color/text_secondary"
             android:visibility="gone" />

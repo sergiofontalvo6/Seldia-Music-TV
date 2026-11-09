@@ -1,7 +1,11 @@
 package com.seldia.music.ui
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.app.UiModeManager
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -33,14 +37,12 @@ import com.seldia.music.data.model.Track
 import com.seldia.music.databinding.ActivityMainBinding
 import com.seldia.music.databinding.ActivityMainDesktopBinding
 import com.seldia.music.databinding.ViewBottomBarBinding
-import com.seldia.music.playback.DownloadStatus
 import com.seldia.music.playback.PlayerState
 import com.seldia.music.ui.home.HomeFragment
 import com.seldia.music.ui.library.GroupTracksFragment
 import com.seldia.music.ui.library.LikedSongsFragment
 import com.seldia.music.ui.library.LibraryFragment
 import com.seldia.music.ui.library.MediaGroupsFragment
-import com.seldia.music.ui.library.OfflineFragment
 import com.seldia.music.ui.player.LyricsBottomSheetFragment
 import com.seldia.music.ui.player.PlayerFragment
 import com.seldia.music.ui.playlist.PlaylistDetailFragment
@@ -54,12 +56,20 @@ import com.seldia.music.util.showCreatePlaylistDialog
 import kotlinx.coroutines.launch
 
 /**
- * Shell principal adaptativo:
- * - Pantallas anchas (>= 840dp): layout desktop de tres paneles
- *   (biblioteca · contenido · "Sonando ahora" con reproductor integrado)
+ * Shell principal adaptativo — Seldia Music TV:
+ * - Android TV (Leanback): tres paneles fijos (sidebar · contenido · Sonando ahora)
+ *   totalmente operable con D-pad (↑ ↓ ← → + centro/Enter). Foco visible con
+ *   borde de acento, escala 1.04x y navegación superior/lateral optimizada 10-foot.
+ * - Pantallas anchas no-TV (>= 840dp): mismo layout desktop de tres paneles.
  * - Pantallas compactas: contenido + barra flotante + navegación inferior.
  */
 class MainActivity : AppCompatActivity() {
+
+    private val fullscreenBackCallback = object : androidx.activity.OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            if (fullscreen) setFullscreen(false)
+        }
+    }
 
     private var phoneBinding: ActivityMainBinding? = null
     private var desktopBinding: ActivityMainDesktopBinding? = null
@@ -92,7 +102,6 @@ class MainActivity : AppCompatActivity() {
     private var npFsTvTitle: TextView? = null
     private var npFsTvArtist: TextView? = null
     private var npFsBtnFavorite: ImageButton? = null
-    private var npFsBtnDownload: ImageButton? = null
     private var npFsBtnPlayPause: ImageButton? = null
     private var npFsBtnPrev: ImageButton? = null
     private var npFsBtnNext: ImageButton? = null
@@ -102,14 +111,12 @@ class MainActivity : AppCompatActivity() {
     private var npFsSeekBar: SeekBar? = null
     private var npFsBtnExit: ImageButton? = null
     private var npBtnFavorite: ImageButton? = null
-    private var npBtnDownload: ImageButton? = null
     private var npBtnQueue: ImageButton? = null
     private var npTvTitle: TextView? = null
     private var npTvArtist: TextView? = null
     private var npSeekBar: SeekBar? = null
     private var npTvPosition: TextView? = null
     private var npTvDuration: TextView? = null
-    private var npProgressDownload: ProgressBar? = null
     private var npBtnModeAudio: MaterialButton? = null
     private var npBtnModeVideo: MaterialButton? = null
     private var npIvArtwork: ImageView? = null
@@ -117,6 +124,10 @@ class MainActivity : AppCompatActivity() {
     // Estado guardado del video_container para pantalla completa exclusiva.
     private var savedVideoParent: ViewGroup? = null
     private var savedVideoIndex: Int = -1
+    // Barra flotante fullscreen vive en el panel derecho: al entrar hay que
+    // re-parentarla al video (decor) para que se vea/foco sea alcanzable por D-pad.
+    private var savedFsParent: ViewGroup? = null
+    private var savedFsIndex: Int = -1
 
     // Autohide de controles en pantalla completa (5 s de inactividad).
     private val hideControlsHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -126,8 +137,25 @@ class MainActivity : AppCompatActivity() {
     private val playerVm: PlayerViewModel by viewModels()
     private val libraryVm: LibraryViewModel by viewModels()
 
+    /** true en Android TV: UiModeManager o feature leanback. */
+    private val isTV: Boolean
+        get() = runCatching {
+            val uiMode = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+            val pm = packageManager
+            when {
+                uiMode?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION -> true
+                pm.hasSystemFeature("android.software.leanback") &&
+                    resources.configuration.screenWidthDp >= 960 -> true
+                pm.hasSystemFeature("android.software.leanback") &&
+                    resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE -> true
+                else -> false
+            }
+        }.getOrDefault(false)
+
     private val isDesktop: Boolean
-        get() = resources.configuration.screenWidthDp >= DESKTOP_MIN_WIDTH_DP ||
+        // En TV siempre se usa el layout de escritorio para tener sidebar fija
+        // + "Sonando ahora" y foco D-pad claro, sin depender solo del ancho.
+        get() = isTV || resources.configuration.screenWidthDp >= DESKTOP_MIN_WIDTH_DP ||
             (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE &&
                 resources.configuration.screenWidthDp >= 720)
 
@@ -157,9 +185,11 @@ class MainActivity : AppCompatActivity() {
 
         setupBottomBar()
         observePlayerState()
-        observeDownloadStates()
         observeConnectivity()
         observeLikedCount()
+        if (isTV) TvFocusHelper.attach(window.decorView)
+        // Back en pantalla completa: minimiza video (no congela ni hace pop de fragment)
+        onBackPressedDispatcher.addCallback(this, fullscreenBackCallback)
 
         if (savedInstanceState == null) {
             phoneBinding?.bottomNav?.selectedItemId = R.id.nav_home
@@ -171,6 +201,143 @@ class MainActivity : AppCompatActivity() {
                 selectSection(LikedSongsFragment())
             }
         }
+
+        // TV: pide foco inicial para que el D-pad tenga punto de partida.
+        if (isTV) {
+            window.decorView.isFocusableInTouchMode = false
+            window.decorView.post { requestInitialTvFocus() }
+        }
+        android.util.Log.d("SeldiaTV", "onCreate isTV=$isTV isDesktop=$isDesktop widthDp=${resources.configuration.screenWidthDp} orientation=${resources.configuration.orientation}")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isTV && currentFocus == null) {
+            window.decorView.post { requestInitialTvFocus() }
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && isTV) {
+            android.util.Log.d("SeldiaTV", "onWindowFocusChanged hasFocus=true currentFocus=${currentFocus?.id}")
+            // Pequeño retraso para que el sistema asiente el foco de la ventana
+            window.decorView.post {
+                if (isTV && currentFocus == null) requestInitialTvFocus()
+                else if (isTV) {
+                    val b = desktopBinding
+                    // Si el foco cayó en el contenedor genérico, moverlo a un control real
+                    val cf = currentFocus
+                    if (cf?.id == R.id.content_container && b != null) {
+                        val ok = b.btnFilterLists.requestFocus()
+                        android.util.Log.d("SeldiaTV", "windowFocus move to filter req=$ok")
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Foco inicial TV: sidebar "Favoritas" (o primer filtro) para arrancar en
+     * navegación lateral fija y luego entrar al contenido con →.
+     */
+    private fun requestInitialTvFocus() {
+        val b = desktopBinding ?: return
+        TvFocusHelper.requestInitialFocus(b.btnNavLiked, window.decorView)
+    }
+
+    private fun isDescendant(ancestor: View, view: View): Boolean {
+        var v: View? = view.parent as? View
+        while (v != null) {
+            if (v == ancestor) return true
+            v = v.parent as? View
+        }
+        return false
+    }
+
+    /**
+     * Mando a distancia:
+     * - Media Play/Pause, Next/Prev, Stop delegan en el reproductor.
+     * - DPAD_CENTER / ENTER: el sistema ya dispara click en el foco actual;
+     *   aquí solo garantizamos que si el foco se pierde, se recupera.
+     * - BACK (KEYCODE_BACK / KEYCODE_TV_BACK): retrocede en la pila de fragmentos.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
+        // En fullscreen: cualquier tecla del mando despierta la barra flotante
+        // y asegura el foco dentro de ella (la surface nunca debe robarlo).
+        if (fullscreen && isDesktop) {
+            showOverlayAndReschedule()
+            val cf = currentFocus
+            val insideFs = npFsBar?.let { bar -> cf != null && (cf == bar || isDescendant(bar, cf)) } ?: false
+            if (!insideFs) {
+                TvFocusHelper.requestInitialFocus(npFsBtnPlayPause ?: npFsBtnExit, window.decorView)
+            }
+        }
+        when (event.keyCode) {
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PAUSE,
+            KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                playerVm.toggle()
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                playerVm.next()
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                playerVm.previous()
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_STOP -> {
+                playerVm.toggle()
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_CENTER,
+            KeyEvent.KEYCODE_ENTER,
+            KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                // Si no hay foco (p. ej. tras abrir diálogo), recupéralo.
+                if (currentFocus == null && isTV) {
+                    requestInitialTvFocus()
+                    return true
+                }
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                // Steering: desde el menú lateral, → entra directo al contenido central
+                // (evita el salto errático al panel derecho / contenedor invisible).
+                if (isTV && desktopBinding != null && currentFocus != null) {
+                    val sidebar = desktopBinding!!.sidebarRoot
+                    var v: View? = currentFocus
+                    var inSidebar = false
+                    while (v != null) {
+                        if (v == sidebar) { inSidebar = true; break }
+                        v = v.parent as? View
+                    }
+                    if (inSidebar) {
+                        val fragView = supportFragmentManager.findFragmentById(R.id.content_container)?.view
+                        val target = fragView?.let { findFirstFocusable(it) }
+                            ?: findFirstFocusable(contentContainer)
+                        if (target != null && target.requestFocus()) {
+                            return true
+                        }
+                    }
+                }
+            }
+            KeyEvent.KEYCODE_BACK -> {
+                // 1) En fullscreen de video, Atrás minimiza al panel derecho (3 columnas)
+                if (fullscreen) {
+                    setFullscreen(false)
+                    return true
+                }
+                // Dejar que el sistema gestione BACK; si no hay backstack,
+                // en TV salir al launcher solo si no hay reproducción activa
+                // es lo esperado, pero no forzamos finish para no cortar música.
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack()
+                    return true
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     // ======================= Desktop: sidebar =======================
@@ -259,7 +426,6 @@ class MainActivity : AppCompatActivity() {
             navigate(SearchFragment())
         }
 
-        b.btnNavOffline.setOnClickListener { openOfflineMusic() }
         b.btnNavLiked.setOnClickListener { openLikedSongs() }
 
         b.btnNewPlaylist.setOnClickListener {
@@ -317,14 +483,12 @@ class MainActivity : AppCompatActivity() {
         npBtnFullscreenExit = np.btnFullscreenExit
         npBtnLyrics = np.btnNpLyrics
         npBtnFavorite = np.btnNpFavorite
-        npBtnDownload = np.btnNpDownload
         npBtnQueue = np.btnNpQueue
         npFsBar = np.fsBar
         npFsIvArtwork = np.fsIvArtwork
         npFsTvTitle = np.fsTvTitle
         npFsTvArtist = np.fsTvArtist
         npFsBtnFavorite = np.fsBtnFavorite
-        npFsBtnDownload = np.fsBtnDownload
         npFsBtnPlayPause = np.fsBtnPlayPause
         npFsBtnPrev = np.fsBtnPrev
         npFsBtnNext = np.fsBtnNext
@@ -338,7 +502,6 @@ class MainActivity : AppCompatActivity() {
         npSeekBar = np.seekBar
         npTvPosition = np.tvPosition
         npTvDuration = np.tvDuration
-        npProgressDownload = np.progressDownload
         npBtnModeAudio = np.btnModeAudio
         npBtnModeVideo = np.btnModeVideo
         npIvArtwork = np.ivBigArtwork
@@ -348,11 +511,15 @@ class MainActivity : AppCompatActivity() {
         npVideoView?.player = playerVm.exoPlayer
         npVideoView?.useController = false
         npVideoView?.resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+        // La surface NO debe robar el foco D-pad: los controles fullscreen sí.
+        npVideoView?.isFocusable = false
+        npVideoView?.isFocusableInTouchMode = false
+        // Cadena explícita en la barra flotante: definida en XML (nextFocusLeft/Right),
+        // la API de View solo permite setNextFocusForwardId, no direccionales.
 
         // Acciones secundarias (los controles principales viven en la barra inferior)
         npBtnLyrics?.setOnClickListener { openLyrics() }
         npBtnFavorite?.setOnClickListener { toggleFavoriteCurrentTrack() }
-        npBtnDownload?.setOnClickListener { downloadCurrentTrack() }
         npBtnQueue?.setOnClickListener { openQueue() }
 
         npBtnFullscreenEnter?.setOnClickListener { setFullscreen(true) }
@@ -387,7 +554,6 @@ class MainActivity : AppCompatActivity() {
         npFsBtnPrev?.setOnClickListener { playerVm.previous() }
         npFsBtnNext?.setOnClickListener { playerVm.next() }
         npFsBtnFavorite?.setOnClickListener { toggleFavoriteCurrentTrack() }
-        npFsBtnDownload?.setOnClickListener { downloadCurrentTrack() }
         npFsBtnExit?.setOnClickListener { setFullscreen(false) }
         npFsVolumeBar?.progress = (playerVm.exoPlayer.volume * 100).toInt()
         npFsVolumeBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -445,14 +611,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        // Sincronización reactiva de descargas en barra/panel (Room + sesión).
-        app.container.libraryRepository.observeDownloadedTrackKeys().observe(this) { keys ->
-            val track = playerVm.state.value.currentTrack ?: return@observe
-            val tint = if (keys.contains(track.key)) accentPrimaryColor()
-            else androidx.core.content.ContextCompat.getColor(this, R.color.text_primary)
-            npBtnDownload?.setColorFilter(tint)
-            bottomBarBinding?.btnDownloadBottom?.setColorFilter(tint)
-        }
     }
 
     // ======================= Bottom bar =======================
@@ -468,7 +626,6 @@ class MainActivity : AppCompatActivity() {
         bar.btnLyrics.setOnClickListener { openLyrics() }
         bar.btnQueue.setOnClickListener { openQueue() }
         bar.btnFavorite.setOnClickListener { toggleFavoriteCurrentTrack() }
-        bar.btnDownloadBottom.setOnClickListener { downloadCurrentTrack() }
 
         if (resources.configuration.screenWidthDp < 560) {
             bar.volumeBar.visibility = View.GONE
@@ -502,7 +659,6 @@ class MainActivity : AppCompatActivity() {
         desktopBinding?.nowPlaying?.let { np ->
             np.btnNpLyrics.setOnClickListener { openLyrics() }
             np.btnNpFavorite.setOnClickListener { toggleFavoriteCurrentTrack() }
-            np.btnNpDownload.setOnClickListener { downloadCurrentTrack() }
         }
 
         bottomBarBinding?.bottomBarRoot?.setOnClickListener {
@@ -530,27 +686,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun downloadCurrentTrack() {
-        val track = playerVm.state.value.currentTrack ?: return
-        when {
-            track.source == Source.LOCAL ->
-                toast(getString(R.string.download_already_local))
-            !app.container.networkConnectivityManager.isCurrentlyOnline() ->
-                toast(getString(R.string.download_offline_blocked))
-            else -> {
-                lifecycleScope.launch {
-                    val already = runCatching {
-                        app.container.libraryRepository.findDownloadedUri(track.key)
-                    }.getOrNull()
-                    if (already != null) {
-                        toast(getString(R.string.download_already_local))
-                    } else {
-                        app.container.mediaDownloadManager.autoDownloadAudio(track)
-                    }
-                }
-            }
-        }
-    }
 
     private fun openLyrics() {
         LyricsBottomSheetFragment().show(supportFragmentManager, LyricsBottomSheetFragment.TAG)
@@ -610,19 +745,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun observeDownloadStates() {
-        if (!isDesktop) return
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                app.container.mediaDownloadManager.downloadStates.collect { states ->
-                    val track = playerVm.state.value.currentTrack
-                    if (track != null && states.containsKey(track.key)) {
-                        lifecycleScope.launch { updateNowPlayingDownloadState(track) }
-                    }
-                }
-            }
-        }
-    }
 
     private fun updatePlaybackUi(s: PlayerState) {
         val bar = bottomBarBinding
@@ -635,7 +757,6 @@ class MainActivity : AppCompatActivity() {
             npTvArtist?.text = ""
             showLogoFallback(npIvArtwork)
             showLogoFallback(bar?.ivArtwork)
-            npProgressDownload?.visibility = View.GONE
             return
         }
 
@@ -755,26 +876,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val alreadyDownloaded = track.uri?.isNotBlank() == true
-        val tint = if (alreadyDownloaded) accentPrimaryColor() else androidx.core.content.ContextCompat.getColor(this, R.color.text_primary)
-        npBtnDownload?.setColorFilter(tint)
-        bar?.btnDownloadBottom?.setColorFilter(tint)
-        npProgressDownload?.visibility = View.GONE
     }
 
-    private suspend fun updateNowPlayingDownloadState(track: Track) {
-        val already = runCatching {
-            app.container.libraryRepository.findDownloadedUri(track.key)
-        }.getOrNull() != null
-        val tint = if (already) accentPrimaryColor() else androidx.core.content.ContextCompat.getColor(this, R.color.text_primary)
-        npBtnDownload?.setColorFilter(tint)
-        bottomBarBinding?.btnDownloadBottom?.setColorFilter(tint)
-    }
 
     private fun scheduleOverlayHide() {
         overlayHideRunnable?.let { hideControlsHandler.removeCallbacks(it) }
         overlayHideRunnable = Runnable {
-            npFsBar?.visibility = View.GONE
+            // En TV no ocultar si el foco está dentro de la barra (usuario navegando
+            // con D-pad); reprograma para no dejar controles invisibles sin foco.
+            val bar = npFsBar
+            if (bar != null && bar.findFocus() != null) {
+                scheduleOverlayHide()
+            } else {
+                bar?.visibility = View.GONE
+            }
         }
         hideControlsHandler.postDelayed(overlayHideRunnable!!, OVERLAY_HIDE_DELAY_MS)
     }
@@ -808,6 +923,7 @@ class MainActivity : AppCompatActivity() {
     fun setFullscreen(enabled: Boolean) {
         if (fullscreen == enabled) return
         fullscreen = enabled
+        fullscreenBackCallback.isEnabled = enabled
         val insets = WindowInsetsControllerCompat(window, window.decorView)
         if (enabled) insets.hide(WindowInsetsCompat.Type.systemBars())
         else insets.show(WindowInsetsCompat.Type.systemBars())
@@ -847,6 +963,24 @@ class MainActivity : AppCompatActivity() {
             npVideoView?.visibility = View.VISIBLE
             npVideoView?.requestLayout()
             npVideoView?.invalidate()
+            // Re-parentar la barra flotante al contenedor de video (decor):
+            // estaba dentro del panel derecho y quedaba oculta tras el video.
+            npFsBar?.let { bar ->
+                val barParent = bar.parent as? ViewGroup
+                if (barParent != null && barParent != video) {
+                    savedFsParent = barParent
+                    savedFsIndex = barParent.indexOfChild(bar)
+                    barParent.removeView(bar)
+                    // Layout al pie del video (FrameLayout en decor)
+                    (video as? ViewGroup)?.addView(
+                        bar,
+                        FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.WRAP_CONTENT
+                        ).apply { gravity = android.view.Gravity.BOTTOM }
+                    )
+                }
+            }
             // La barra flotante fullscreen lleva el botón de salida integrado.
             npFsBtnExit?.visibility = View.VISIBLE
             npBtnFullscreenExit?.visibility = View.GONE
@@ -856,6 +990,12 @@ class MainActivity : AppCompatActivity() {
                 false
             }
             showOverlayAndReschedule()
+            // D-pad: el foco cae en la barra flotante (minimizar/play) para que
+            // CENTER lo active y BACK minimice sin congelar la pantalla.
+            // TvFocusHelper con reintento (requestFocus directo falla en modo táctil de algunas ROMs TV).
+            window.decorView.post {
+                TvFocusHelper.requestInitialFocus(npFsBtnExit ?: npFsBtnPlayPause, window.decorView)
+            }
         } else {
             desktopBinding?.let { b ->
                 b.sidebarRoot.visibility = View.VISIBLE
@@ -877,12 +1017,24 @@ class MainActivity : AppCompatActivity() {
                         insertAt,
                         LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
-                            (220 * resources.displayMetrics.density).toInt()
+                            (190 * resources.displayMetrics.density).toInt()
                         )
                     )
                 }
                 savedVideoParent = null
                 savedVideoIndex = -1
+                // Restaurar barra flotante en el panel derecho
+                npFsBar?.let { bar ->
+                    (bar.parent as? ViewGroup)?.removeView(bar)
+                    val fsParent = savedFsParent
+                    val fsIndex = savedFsIndex
+                    if (fsParent != null) {
+                        val at = if (fsIndex in 0 until fsParent.childCount) fsIndex else fsParent.childCount
+                        fsParent.addView(bar, at)
+                    }
+                    savedFsParent = null
+                    savedFsIndex = -1
+                }
             }
             video?.setOnTouchListener(null)
             overlayHideRunnable?.let { hideControlsHandler.removeCallbacks(it) }
@@ -903,6 +1055,22 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.content_container, fragment)
             .commit()
+        supportFragmentManager.executePendingTransactions()
+        // TV: tras cambiar de sección, mueve el foco al contenido para
+        // que el D-pad no se quede en el sidebar.
+        if (isTV) {
+            window.decorView.post {
+                val fragView = supportFragmentManager.findFragmentById(R.id.content_container)?.view
+                val firstFocusable = fragView?.let { findFirstFocusable(it) }
+                    ?: contentContainer.findFocus()
+                    ?: findFirstFocusable(contentContainer)
+                if (firstFocusable != null) {
+                    firstFocusable.requestFocus()
+                } else {
+                    contentContainer.requestFocus()
+                }
+            }
+        }
     }
 
     private fun navigate(fragment: Fragment) {
@@ -910,7 +1078,35 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.content_container, fragment)
             .addToBackStack(null)
             .commit()
+        supportFragmentManager.executePendingTransactions()
+        if (isTV) {
+            window.decorView.post {
+                val fragView = supportFragmentManager.findFragmentById(R.id.content_container)?.view
+                val firstFocusable = fragView?.let { findFirstFocusable(it) }
+                if (firstFocusable != null) {
+                    firstFocusable.requestFocus()
+                }
+            }
+        }
     }
+
+    /** Recorre el árbol y devuelve el primer foco D-pad disponible (preferir clicables). */
+    private fun findFirstFocusable(root: View): View? {
+        // Preferir hojas clicables (botones) sobre contenedores no clicables.
+        val isLeafFocusable = root.isFocusable && root.isClickable && root.isVisibleForTV()
+        if (isLeafFocusable) return root
+        if (root is ViewGroup) {
+            for (i in 0 until root.childCount) {
+                val found = findFirstFocusable(root.getChildAt(i))
+                if (found != null) return found
+            }
+        }
+        // Fallback: cualquier foco visible (p. ej. RecyclerView de pistas)
+        if (root.isFocusable && root.isVisibleForTV()) return root
+        return null
+    }
+
+    private fun View.isVisibleForTV(): Boolean = isShown
 
     fun openPlayer() {
         if (isDesktop) return
@@ -930,8 +1126,6 @@ class MainActivity : AppCompatActivity() {
         renderSidebarFilterStates()
         navigate(PlaylistDetailFragment.newInstance(playlistId))
     }
-
-    fun openOfflineMusic() = navigate(OfflineFragment())
 
     fun openSettings() = navigate(com.seldia.music.ui.settings.SettingsFragment())
 

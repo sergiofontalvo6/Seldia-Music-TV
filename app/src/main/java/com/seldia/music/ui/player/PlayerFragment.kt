@@ -24,7 +24,6 @@ import com.seldia.music.data.model.Source
 import com.seldia.music.data.model.Track
 import com.seldia.music.databinding.FragmentPlayerBinding
 import com.seldia.music.di.AppContainer
-import com.seldia.music.playback.DownloadStatus
 import com.seldia.music.playback.PlayerState
 import com.seldia.music.ui.MainActivity
 import com.seldia.music.ui.PlayerViewModel
@@ -45,24 +44,7 @@ class PlayerFragment : Fragment() {
     private val container: AppContainer
         get() = (requireActivity().application as SeldiaApp).container
 
-    private var downloadStates: Map<String, DownloadStatus> = emptyMap()
     private var lastArtworkUrl: String? = null
-    private var pendingDownloadAction: (() -> Unit)? = null
-
-    private val writePermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            val action = pendingDownloadAction
-            pendingDownloadAction = null
-            if (granted) {
-                action?.invoke()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    R.string.download_permission_denied,
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
 
     private val fullscreenBackCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = setFullscreen(false)
@@ -96,7 +78,6 @@ class PlayerFragment : Fragment() {
         binding.btnFullscreen.setOnClickListener { setFullscreen(!isFullscreen) }
         binding.btnFullscreenExit.setOnClickListener { setFullscreen(false) }
         binding.btnLyrics.setOnClickListener { openLyricsSheet() }
-        binding.btnDownload.setOnClickListener { promptDownloadCurrent() }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, fullscreenBackCallback)
 
         binding.modeToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -137,14 +118,6 @@ class PlayerFragment : Fragment() {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                container.mediaDownloadManager.downloadStates.collect { states ->
-                    downloadStates = states
-                    renderDownloadState(playerVm.state.value.currentTrack)
-                }
-            }
-        }
     }
 
     private fun openLyricsSheet() {
@@ -154,56 +127,7 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun promptDownloadCurrent() {
-        val track = playerVm.state.value.currentTrack
-        if (track == null) {
-            Toast.makeText(requireContext(), R.string.nothing_playing, Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (track.source == Source.LOCAL) {
-            Toast.makeText(requireContext(), R.string.download_already_local, Toast.LENGTH_SHORT).show()
-            return
-        }
-        // Descarga directa y silenciosa: SOLO audio (M4A).
-        if (!container.networkConnectivityManager.isCurrentlyOnline()) {
-            Toast.makeText(requireContext(), R.string.download_offline_blocked, Toast.LENGTH_LONG).show()
-            return
-        }
-        // Ya descargada (URI enlazada en Room): no duplicar el archivo.
-        viewLifecycleOwner.lifecycleScope.launch {
-            val already = runCatching {
-                container.libraryRepository.findDownloadedUri(track.key)
-            }.getOrNull()
-            if (already != null) {
-                Toast.makeText(requireContext(), R.string.download_already_local, Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-            Toast.makeText(requireContext(), getString(R.string.download_enqueued, track.title), Toast.LENGTH_SHORT).show()
-            withLegacyWritePermission {
-                container.mediaDownloadManager.download(track, com.seldia.music.playback.DownloadFormat.AUDIO)
-            }
-        }
-    }
 
-    /**
-     * En API 29+ MediaStore no requiere WRITE_EXTERNAL_STORAGE; en API 27-28
-     * el permiso se solicita antes de insertar en la colección pública.
-     */
-    private fun withLegacyWritePermission(action: () -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            action()
-            return
-        }
-        val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
-        if (ContextCompat.checkSelfPermission(requireContext(), permission) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            action()
-        } else {
-            pendingDownloadAction = action
-            writePermissionLauncher.launch(permission)
-        }
-    }
 
     private fun cycleRepeat() {
         val next = when (playerVm.state.value.repeatMode) {
@@ -258,7 +182,6 @@ class PlayerFragment : Fragment() {
         binding.btnLyrics.isEnabled = hasTrack
         binding.btnLyrics.alpha = if (hasTrack) 1f else 0.4f
 
-        renderDownloadState(track)
 
         binding.btnModeVideo.isEnabled = isYouTube
         updateModeToggle(s.videoMode)
@@ -280,22 +203,6 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun renderDownloadState(track: Track?) {
-        if (_binding == null) return
-        val status = track?.let { downloadStates[it.key] } ?: DownloadStatus.Idle
-        val isYouTube = track?.source == Source.YOUTUBE
-        val busy = status is DownloadStatus.Preparing || status is DownloadStatus.Downloading
-
-        binding.progressDownload.visibility = if (busy) View.VISIBLE else View.GONE
-        binding.btnDownload.visibility = if (busy) View.GONE else View.VISIBLE
-        binding.btnDownload.isEnabled = isYouTube
-        binding.btnDownload.alpha = if (isYouTube) 1f else 0.4f
-
-        // Descargada si: está como Completed en el flujo actual O ya tiene URI en Room (sesión previa).
-        val alreadyDownloaded = status is DownloadStatus.Completed || track?.uri?.isNotBlank() == true
-        val tint = if (alreadyDownloaded) requireContext().accentPrimaryColor() else ContextCompat.getColor(requireContext(), R.color.text_primary)
-        binding.btnDownload.setColorFilter(tint)
-    }
 
     private fun updateModeToggle(videoMode: Boolean) {
         updatingModeToggle = true

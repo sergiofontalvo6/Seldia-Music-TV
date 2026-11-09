@@ -20,7 +20,6 @@ import com.seldia.music.SeldiaApp
 import com.seldia.music.data.model.Track
 import com.seldia.music.di.AppContainer
 import com.seldia.music.ui.adapters.TrackTableAdapter
-import com.seldia.music.util.OfflinePrefs
 import com.seldia.music.util.showAddToPlaylistDialog
 import com.seldia.music.util.showCreatePlaylistDialog
 import com.seldia.music.util.showModernConfirmDialog
@@ -43,7 +42,6 @@ abstract class TrackListFragment : Fragment() {
     protected lateinit var adapter: TrackTableAdapter
 
     private var pendingPermissionAction: (() -> Unit)? = null
-    private var pendingDownloadAction: (() -> Unit)? = null
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -51,16 +49,8 @@ abstract class TrackListFragment : Fragment() {
             pendingPermissionAction = null
         }
 
-    private val writePermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            val action = pendingDownloadAction
-            pendingDownloadAction = null
-            if (granted) {
-                action?.invoke()
-            } else {
-                toast(getString(R.string.download_permission_denied))
-            }
-        }
+    // TV: sin descargas de música (solo streaming). Se conserva el launcher
+    // de permiso de lectura local para la biblioteca offline existente.
 
     /**
      * Solicita el permiso de lectura de música local si es necesario.
@@ -92,14 +82,11 @@ abstract class TrackListFragment : Fragment() {
             onAddToQueue = { playerVm.addToQueue(it) },
             onAddToPlaylist = ::promptAddToPlaylist,
             onRemove = onRemove,
-            onDownload = ::promptDownloadTrack,
             onDeleteLocal = onDeleteLocal,
             onRequestSelectionMode = { startSelectionMode(it) },
             onSelectionChanged = { keys -> updateSelectionTitle(keys.size) }
         )
         observeFavorites()
-        observeDownloads()
-        observeDownloadedKeys()
         observePlayingKey()
         return adapter
     }
@@ -204,10 +191,6 @@ abstract class TrackListFragment : Fragment() {
                     batchAddToPlaylist(selected)
                     true
                 }
-                R.id.action_download_selected -> {
-                    batchDownload(selected)
-                    true
-                }
                 R.id.action_fav_toggle -> {
                     batchFavToggle(selected)
                     true
@@ -283,29 +266,7 @@ abstract class TrackListFragment : Fragment() {
         }
     }
 
-    protected fun batchDownload(selected: List<Track>) {
-        if (!isAdded || view == null) return
-        val count = selected.size
-        showModernConfirmDialog(
-            context = requireContext(),
-            title = getString(R.string.download_selected),
-            message = resources.getQuantityString(R.plurals.confirm_download_selected, count, count),
-            confirmText = getString(R.string.download_track)
-        ) {
-            selected.forEach { promptDownloadTrack(it) }
-        }
-    }
-
-    /** Accesible desde un solo ícono (se conserva por compatibilidad). */
-    fun batchRemoveDownload(selected: List<Track>) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            var removed = 0
-            selected.forEach { track ->
-                if (container.offlineMusicRepository.delete(track)) removed++
-            }
-            toast(resources.getQuantityString(com.seldia.music.R.plurals.playlist_count, removed, removed))
-        }
-    }
+    // TV: sin descargas de música (solo streaming).
 
     protected fun batchFavToggle(selected: List<Track>) {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -319,10 +280,6 @@ abstract class TrackListFragment : Fragment() {
 
     private fun onFavoriteToggle(track: Track) {
         libraryVm.toggleFavorite(track)
-        // Descarga automática: ÚNICAMENTE el flujo de audio (M4A/WEBM), sin vídeo.
-        if (OfflinePrefs.autoDownloadEnabled && track.source == com.seldia.music.data.model.Source.YOUTUBE) {
-            container.mediaDownloadManager.autoDownloadAudio(track)
-        }
     }
 
     /** Resalta en la tabla la pista que está sonando (flujo transparente). */
@@ -343,54 +300,7 @@ abstract class TrackListFragment : Fragment() {
         playerVm.playQueue(adapter.snapshotList(), index)
     }
 
-    protected fun promptDownloadTrack(track: Track) {
-        if (!isAdded || view == null) return
-        // Descarga directa y silenciosa: SOLO audio (M4A), sin diálogo de formato.
-        // Sin conexión no hay transferencia posible; en modo automático/offline
-        // tampoco se procesa vídeo jamás.
-        if (!container.networkConnectivityManager.isCurrentlyOnline()) {
-            toast(getString(R.string.download_offline_blocked))
-            return
-        }
-        if (track.source == com.seldia.music.data.model.Source.LOCAL) {
-            toast(getString(R.string.download_already_local))
-            return
-        }
-        // Ya descargada (URI enlazada en Room): no duplicar el archivo.
-        viewLifecycleOwner.lifecycleScope.launch {
-            val already = runCatching {
-                container.libraryRepository.findDownloadedUri(track.key)
-            }.getOrNull()
-            if (already != null) {
-                toast(getString(R.string.download_already_local))
-                return@launch
-            }
-            toast(getString(R.string.download_enqueued, track.title))
-            withLegacyWritePermission {
-                container.mediaDownloadManager.download(track, com.seldia.music.playback.DownloadFormat.AUDIO)
-            }
-        }
-    }
 
-    /**
-     * En API 29+ MediaStore no necesita WRITE_EXTERNAL_STORAGE. En API 27-28
-     * el proveedor todavía lo exige, así que se solicita antes de descargar.
-     */
-    private fun withLegacyWritePermission(action: () -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            action()
-            return
-        }
-        val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
-        if (ContextCompat.checkSelfPermission(requireContext(), permission) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            action()
-        } else {
-            pendingDownloadAction = action
-            writePermissionLauncher.launch(permission)
-        }
-    }
 
     protected fun observeFavorites() {
         container.libraryRepository.observeFavorites().observe(viewLifecycleOwner) { favs ->
@@ -398,26 +308,7 @@ abstract class TrackListFragment : Fragment() {
         }
     }
 
-    protected fun observeDownloads() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                container.mediaDownloadManager.downloadStates.collect { states ->
-                    if (::adapter.isInitialized) {
-                        adapter.updateDownloadStates(states)
-                    }
-                }
-            }
-        }
-    }
 
-    /** Observa las pistas ya descargadas y persistidas en Room para mostrar el estado rojo en las listas. */
-    protected fun observeDownloadedKeys() {
-        libraryVm.downloadedKeys.observe(viewLifecycleOwner) { keys ->
-            if (::adapter.isInitialized) {
-                adapter.updateDownloadedKeys(keys)
-            }
-        }
-    }
 
     private fun promptAddToPlaylist(track: Track) {
         viewLifecycleOwner.lifecycleScope.launch {

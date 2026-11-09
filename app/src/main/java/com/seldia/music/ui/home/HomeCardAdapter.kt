@@ -12,7 +12,7 @@ class HomeCardAdapter(
     private val onClick: (HomeCard) -> Unit
 ) : ListAdapter<HomeCardAdapter.HomeCard, HomeCardAdapter.VH>(HomeCardDiffCallback()) {
 
-    enum class Type { OFFLINE, FAVORITES, PLAYLISTS }
+    enum class Type { FAVORITES, PLAYLISTS }
 
     data class HomeCard(val type: Type, val subtitle: String)
 
@@ -29,11 +29,15 @@ class HomeCardAdapter(
         holder.bind(getItem(position))
     }
 
+    override fun onViewRecycled(holder: VH) {
+        com.seldia.music.ui.TvFocusHelper.resetItem(holder.itemView)
+        super.onViewRecycled(holder)
+    }
+
     inner class VH(private val binding: ItemHomeCardBinding) : androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root) {
 
         fun bind(card: HomeCard) {
             val (titleRes, iconRes, backgroundRes) = when (card.type) {
-                Type.OFFLINE -> Triple(R.string.action_offline, R.drawable.ic_download, R.drawable.bg_card_offline)
                 Type.FAVORITES -> Triple(R.string.action_favorites, R.drawable.ic_favorite_filled, R.drawable.bg_card_favorites)
                 Type.PLAYLISTS -> Triple(R.string.action_playlists, R.drawable.ic_playlist, R.drawable.bg_card_playlists)
             }

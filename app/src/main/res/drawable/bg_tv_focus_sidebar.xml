@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sidebar TV: cristal del tema + doble borde -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="?attr/accentSoft" />
+                    <corners android:radius="18dp" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="#40FFFFFF" />
+                    <corners android:radius="18dp" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                    <corners android:radius="18dp" />
+                    <stroke
+                        android:width="5dp"
+                        android:color="#FFFFFF" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                    <corners android:radius="18dp" />
+                    <stroke
+                        android:width="2dp"
+                        android:color="?attr/accentPrimary" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_pressed="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="#55FFFFFF" />
+                    <corners android:radius="18dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="#00000000" />
+                    <corners android:radius="18dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

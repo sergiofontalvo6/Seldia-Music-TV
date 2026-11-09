@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import com.seldia.music.R
 import com.seldia.music.SeldiaApp
 import com.seldia.music.databinding.FragmentSettingsBinding
-import com.seldia.music.util.OfflinePrefs
 import com.seldia.music.util.ThemePrefs
 import com.seldia.music.data.update.UpdateCheck
 import kotlinx.coroutines.launch
@@ -73,11 +72,7 @@ class SettingsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.switchAutoDownload.isChecked = OfflinePrefs.autoDownloadEnabled
-        binding.switchAutoDownload.setOnCheckedChangeListener { _, checked ->
-            OfflinePrefs.autoDownloadEnabled = checked
-        }
-
+        // TV: sin descargas de música; la app es solo streaming.
         binding.btnBackup.setOnClickListener {
             exportLauncher.launch("seldia-music-backup-${System.currentTimeMillis()}.json")
         }

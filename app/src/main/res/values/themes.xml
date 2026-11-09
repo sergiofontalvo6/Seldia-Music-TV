@@ -185,6 +185,17 @@
         <item name="accentPrimaryDark">@color/accent_pink_dark</item>
     </style>
 
+    <!-- ===== Seldia Music TV: ajustes para Leanback / 10-foot UI =====
+         No cambia colores, solo prepara ventana sin decoración y foco visible.
+         Se aplica en MainActivity cuando se detecta TV (leanback o UiMode). -->
+    <style name="Theme.SeldiaMusic.TV" parent="Theme.SeldiaMusic">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="ThemeOverlay.SeldiaMusic.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/Widget.SeldiaMusic.BottomSheet</item>
         <item name="android:windowIsFloating">false</item>

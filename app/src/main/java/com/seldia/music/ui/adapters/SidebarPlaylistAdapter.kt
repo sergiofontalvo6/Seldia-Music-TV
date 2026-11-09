@@ -113,6 +113,11 @@ class SidebarPlaylistAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(getItem(position))
 
+    override fun onViewRecycled(holder: VH) {
+        com.seldia.music.ui.TvFocusHelper.resetItem(holder.itemView)
+        super.onViewRecycled(holder)
+    }
+
     inner class VH(private val binding: ItemSidebarPlaylistBinding) :
         androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root) {
 

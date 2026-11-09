@@ -1,132 +1,136 @@
-# SELDIA MUSIC
+# Seldia Music TV
 
-Aplicación musical completa para Android, con diseño **Dark Glassmorphism** y panel de reproductor integrado estilo "Sonando ahora", pensada para **radios Android / Android 8.1, 1 GB RAM, 1280×720, horizontal)** 
-**Una alternativa a Youtube y Spotify ligera para radios android, Ver videos y Escuchar musica fluida** 
-**Sin publicidad propia.** Cero SDKs publicitarios, cero banners, cero rastreadores.
+**El reproductor de música y video para Android TV con control remoto.**  
+HTML: sidebar de navegación, tabla central de pistas y panel «Sonando ahora» en 3 columnas, foco D-pad con cristal del color de acento y pantalla completa de video navegable.
+
+![TV](docs/screenshots/01-main.png)
+
+| | | |
+|:---:|:---:|:---:|
+| ![Foco en pista](docs/screenshots/02-focus-track.png) | ![Pantalla completa](docs/screenshots/03-fullscreen.png) | ![Nav en barra](docs/screenshots/04-fullscreen-nav.png) |
+| **Foco cristal del tema** en pista enfocada (naranja = acento activo) | **Video a pantalla completa** con barra flotante visible | **Navegación D-pad** en la barra: `prev → play → next → seek → minimizar` |
+
+![Cola y panel](docs/screenshots/05-queue.png)
+
+> Capturas reales de TV (Google TV Stick 4K + Claro STB), sin emulador.
 
 ---
 
-## Capturas
+## Qué es
 
-![Playlist — tres paneles con barra lateral, tabla y Sonando ahora](docs/screenshots/014313.png)
+Seldia Music TV es una alternativa ligera a YouTube/Spotify para televisores: busca en YouTube vía **NewPipe Extractor** (sin credenciales), reproduce con **Media3/ExoPlayer**, importa listas públicas de **Spotify** (enlace o `.txt`), guarda favoritos/playlists/historial en **Room**, sincroniza letras con karaoke y se actualiza por OTA desde GitHub Releases.
 
-| Panel completo | Descarga offline (toast) | Ajustes + vídeos |
-|---|---|---|
-| ![Favoritas con reproducción y barra inferior](docs/screenshots/014653.png) | ![Download saved toast](docs/screenshots/014653.png) | ![Ajustes Spotify y Actualización OTA](docs/screenshots/014835.png) |
+**Sin publicidad propia.** Cero SDKs publicitarios, cero banners, cero rastreadores.
 
-> Tres paneles (lateral · contenido · "Sonando ahora"), filtros `Listas | Artistas | Buscar`, reproducción y barra inferior flotante. Ajustes con Spotify (URL/`.txt`), Actualización OTA, temas y acentos.
+### Android TV / Leanback
+
+- Nombre **Seldia Music TV**, banner y `android.software.leanback` (`required=false`, híbrido móvil/TV) con `LEANBACK_LAUNCHER` → aparece en el menú principal del TV.
+- Detección `UiModeManager.TELEVISION` / `leanback` → fuerza layout de 3 paneles 10-foot (`sidebar · contenido · Sonando ahora`).
+- Todo operable con **D-pad** (arriba/abajo/izquierda/derecha + Centro/Enter + Atrás): sidebar fija, barra inferior inferior con **Prev/Next de 48dp** y cadena `nextFocus` predecible, lista central que muestra 6–8 pistas sin scroll excesivo y video en pantalla completa cuyo botón **Minimizar (↘)** funciona con CENTER y con Atrás.
+- **Foco cristal del tema:** borde blanco grueso + relleno del acento activo (`?attr/accentPrimary` / `accentSoft`), escala 1.06 y `foreground` con estado para contenedores; cambia al cambiar de color en Ajustes (8 acentos).
 
 ---
 
 ## Características
 
 | Área | Estado |
-|------|--------|
-| **Tres paneles en horizontal** (lateral · contenido · "Sonando ahora") + barra inferior flotante, con PlayerView/ExoPlayer vinculado correctamente (sin pantalla negra en vídeo) | ✅ |
-| **Logo** integrado en la cabecera (junto a "Seldia Music", card 36 dp sobre Glass) | ✅ |
-| **Panel lateral:** fila de filtros `Listas \| Artistas \| Buscar`; al iniciar se selecciona la primera lista (Favoritas) en el centro; playlists **ordenadas por reproducciones** (la más escuchada primero, vía Room `COUNT(history)` + `ViewModel.sortedByDescending`); "Sin conexión" abajo, Ajustes solo icono | ✅ |
-| **Búsqueda directa en YouTube vía NewPipe Extractor** (`YoutubeSearchQueryHandlerFactory.ALL`, no solo música) | ✅ |
-| **Reproducción unificada Media3**: panel derecho con audio/vídeo, fullscreen con controles que se ocultan a 5 s, barra inferior clonada en fullscreen, letras en Bottom Sheet | ✅ |
-| **Descargas sincronizadas en todas las vistas** (flecha en acento al descargar, también en Offline) | ✅ |
-| **Sistema híbrido Online ⇄ Offline transparente y automático** (`NetworkConnectivityManager`); sin descargas de vídeo en offline (solo audio) | ✅ |
-| **Listas online/offline sincronizadas con Room** (favoritos, playlists, historial y `uri` del audio descargado) | ✅ |
-| **Importar listas de Spotify** (enlace público **o** archivo `.txt` línea por línea): playlists y álbumes, mapeo a YouTube/NewPipe, guardado en Room ("Mis Listas") con progreso | ✅ |
-| **Copia de seguridad y restauración JSON** (SAF `CreateDocument`/`OpenDocument`) | ✅ |
-| **Personalización**: Oscuro / Claro / **Glass (iPhone)** + 8 acentos dinámicos (reproducción, progreso, episodios, switches) | ✅ |
-| **Rendimiento P0**: adaptadores `ListAdapter` + `DiffUtil`, Coil `size(128)` para miniaturas, scopes cancelables, `positionFlow` separado del estado discreto, release **R8 + shrinkResources** (~4 MB vs ~15 MB debug) | ✅ |
-| Favoritos / Playlists / Historial (+ vaciar, renombrar, eliminar) | ✅ |
-| Cola real (play, próxima/anterior, shuffle, repeat) + MediaSession + notificación | ✅ |
-| Persistencia (Room + SharedPreferences) | ✅ |
+|:---|:---:|
+| **3 paneles en horizontal + barra inferior flotante** (video sin pantalla negra, audio/vídeo en el panel derecho) | ✅ |
+| **Foco D-pad universal** (cristal del tema en cualquier control, sin recorte, sin selecciones atascadas) | ✅ |
+| **Video fullscreen con barra flotante navegable** y minimizar por CENTER/Atrás | ✅ |
+| Búsqueda YouTube vía NewPipe (`ALL`, no solo música), sin API key | ✅ |
+| Reproducción Media3 (cola, shuffle, repeat, MediaSession, notificación, letras) | ✅ |
+| Importar Spotify: enlace público **o** `Download/list-spotify.txt` (un enlace por línea) → Room | ✅ |
+| Favoritos / Playlists / Historial (renombrar, borrar, vaciar) | ✅ |
+| Copia de seguridad/restauración JSON (SAF) | ✅ |
+| Temas: Oscuro / Claro / Glass + 8 acentos (todo el highlight sigue al acento) | ✅ |
+| Rendimiento: `ListAdapter`+`DiffUtil`, Coil 128px, `positionFlow` separado, R8+shrinkResources | ✅ |
+| Persistencia Room + SharedPreferences | ✅ |
+
+> Sin descargas de música en TV (solo streaming); la biblioteca offline existente se sigue mostrando donde aplica.
 
 ---
 
-## Requisitos de compilación
+## Requisitos
 
-- JDK 17 (Temurin) — `JAVA_HOME` debe apuntar a un JDK 17 (el JDK del sistema puede ser más reciente y no es compatible).
-- Android SDK (platform 34, build-tools), Gradle 8.9 (incluido el wrapper).
-
-> La búsqueda YouTube funciona **sin credenciales** vía NewPipe Extractor (API Data v3 opcional vía `SELDIA_YOUTUBE_API_KEY`, no versionada).
+- **JDK 17** (Temurin) — `JAVA_HOME` a JDK 17 (el JDK del sistema puede ser más nuevo).
+- Android SDK platform 34 + build-tools, Gradle 8.9 (wrapper incluido).
+- TVs Android con **Depuración ADB activada** para las pruebas locales.
+- YouTube funciona **sin credenciales** vía NewPipe (API Data v3 opcional vía `SELDIA_YOUTUBE_API_KEY`, no versionada).
 
 ## Compilar
 
-```bash
-# Windows
+```bat
+REM Windows
 set JAVA_HOME=%USERPROFILE%\.jdks\jdk-17.0.21+9
-gradlew.bat assembleDebug
-gradlew.bat assembleRelease
-# Linux/macOS
-./gradlew assembleDebug
+gradlew.bat :app:assembleDebug
+gradlew.bat :app:assembleRelease
 ```
-
-El APK debug se genera en `app/build/outputs/apk/debug/app-debug.apk` (release ofuscado en `app/build/outputs/apk/release/app-release-unsigned.apk`).
-
-## Instalar en el dispositivo/emulador
 
 ```bash
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.seldia.music/.ui.MainActivity
+# Linux / macOS
+./gradlew :app:assembleDebug
 ```
 
-Emulador de referencia: `emulator-5554` (1280×720, API 27).
+APK debug → `app/build/outputs/apk/debug/app-debug.apk`  
+Release ofuscado → `app/build/outputs/apk/release/app-release-unsigned.apk`
 
-## Mínimo y objetivo
+- `minSdk 27` (Android 8.1), `targetSdk 34`, optimizado para 1 GB de RAM.
 
-- `minSdk 27` (Android 8.1), `targetSdk 34`.
-- Optimizado para 1 GB de RAM.
+## Instalar y probar en tus TVs (ADB inalámbrico)
 
-## Importar de Spotify
+| TV | IP |
+|:---|:---:|
+| TV1 — 4K Google TV Stick | `192.168.100.129` |
+| TV2 — Claro STB | `192.168.100.177` |
 
-Dos métodos, ambos sin login (API Web pública, sin OAuth):
+Activá **Depuración ADB** en cada TV y aceptá la huella RSA al primer `connect`.
 
-1. **Enlace**: pega `https://open.spotify.com/playlist/…` o `…/album/…` → Importar.
-2. **Archivo `.txt`**: botón **"Importar desde archivo (.txt)"** ("Seleccionar archivo de listas en USB o Descargas") → un enlace por línea; respeta `?si=…`, ignora blancos, procesa secuencialmente con progreso `Procesando enlace X de N…`.
+```bat
+install_tv.bat            REM compila e instala en ambas (TV1+TV2)
+install_tv.bat tv1        REM solo 192.168.100.129
+install_tv.bat tv2        REM solo 192.168.100.177
+```
 
-Las pistas se mapean vía NewPipe (`"$title $artist"`) y se guardan en Room para aparecer en "Mis Listas" con carátula y duraciones reales.
+Manual:
 
-## Documentación
+```bat
+adb connect 192.168.100.129
+adb -s 192.168.100.129:5555 install -r app\build\outputs\apk\debug\app-debug.apk
+adb connect 192.168.100.177
+adb -s 192.168.100.177:5555 install -r app\build\outputs\apk\debug\app-debug.apk
+adb -s 192.168.100.129:5555 shell am start -n com.seldia.music/.ui.MainActivity
+```
 
-- [Arquitectura](docs/ARCHITECTURE.md)
-- [Informe de pruebas](docs/TEST_REPORT.md)
-- [Estado de funcionalidades](docs/FEATURES_STATUS.md)
-- [Preparación para iOS](docs/IOS_PREPARATION.md)
+Scripts: `install_tv.bat`, `install_tv.ps1` (`-Target both|tv1|tv2`), `install_tv.sh`, y tareas Gradle `:app:installTvDebug`, `:app:installTv1Debug`, `:app:installTv2Debug`.
 
----
+### Listas de Spotify desde `Download/`
+```bat
+adb -s 192.168.100.129:5555 push "C:\Users\SBXALOGON\Desktop\list-spotify.txt" /sdcard/Download/
+adb -s 192.168.100.177:5555 push "C:\Users\SBXALOGON\Desktop\list-spotify.txt" /sdcard/Download/
+```
+En la TV: **Ajustes → Importar lista de Spotify → Importar desde archivo (.txt)** → elegí `Download/list-spotify.txt` con el mando (un enlace por línea, ignora `?si=…`).
 
-## Estructura del proyecto
+## Arquitectura
 
 ```
 app/src/main/java/com/seldia/music/
-├── SeldiaApp.kt                 # Application (+ OfflinePrefs / ThemePrefs)
-├── di/AppContainer.kt           # DI manual (sin Hilt)
-├── data/
-│   ├── model/                   # Modelos puros Kotlin (Track, Playlist, Source)
-│   ├── db/                      # Room (entidades, DAOs, Mappers; incluye markDownloaded())
-│   ├── network/                 # NetworkConnectivityManager (online ⇄ offline)
-│   ├── offline/                 # OfflineMusicRepository (MediaStore + descargas)
-│   ├── extractor/               # YouTubeAudioExtractor (NewPipe: búsqueda ALL + streams)
-│   ├── spotify/                 # Parser público (playlists + álbumes) e importador Room
-│   ├── backup/                  # BackupManager JSON (SAF)
-│   └── repository/              # LibraryRepository, YouTubeRepository, ...
-├── playback/                    # MusicPlayer (StateFlow + positionFlow) + PlaybackService + MediaDownloadManager
+├── SeldiaApp.kt               # Application
+├── di/AppContainer.kt         # DI manual (sin Hilt)
+├── data/ (model, db Room, network, extractor NewPipe, spotify, backup, repository)
+├── playback/                  # MusicPlayer StateFlow + PlaybackService
 └── ui/
-    ├── MainActivity.kt          # Shell adaptativo (3 paneles desktop / teléfono)
-    ├── adapters/                # Todo ListAdapter + DiffUtil (TrackTable, Sidebar, Playlist, HomeCard)
-    ├── home/                    # HomeFragment + HomeCardAdapter
-    ├── library/                 # LikedSongsFragment, PlaylistsTabFragment, MediaGroupsFragment, GroupTracksFragment, OfflineFragment, ...
-    ├── settings/                # SettingsFragment (auto-descarga, Spotify URL + .txt, backup/restore, temas/acento)
-    ├── search/                  # SearchFragment (NewPipe ALL)
-    ├── player/                  # PlayerFragment, LyricsBottomSheetFragment, LyricsAdapter
-    └── youtube/                 # YouTubePlayerActivity (IFrame API, primer plano)
-buildSrc/                        # Plugin CharsetShim (compatibilidad NewPipe en API 27)
-app/proguard-rules.pro           # R8: reglas Media3, Room, Coil, Rhino
+    ├── MainActivity.kt        # Shell 3 paneles TV + TvFocusHelper (cristal del tema)
+    ├── TvFocusHelper.kt       # Foco cristal universal con estado
+    ├── adapters/ home/ library/ queue/ search/ settings/ player/
+    └── youtube/               # YouTubePlayerActivity
 ```
 
 ---
 
 ## Ko-fi ☕
 
-Si te gusta el proyecto, puedes invitarme un café o apoyar el mantenimiento:
+Si te gusta el proyecto, invítame un café o apoyá el mantenimiento:
 
 * **Buy me a coffee (Ko-fi):** <a href="https://ko-fi.com/seldiamusic" target="_blank"><img src="https://cdn.ko-fi.com/cdn/kofi2.png?v=3" height="36" alt="Buy Me a Coffee at ko-fi.com" /></a>
 * Directo: https://ko-fi.com/seldiamusic
-

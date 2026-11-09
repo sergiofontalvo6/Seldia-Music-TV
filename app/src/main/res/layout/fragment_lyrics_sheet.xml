@@ -73,11 +73,13 @@
             android:id="@+id/btn_close_lyrics"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_glass_pill"
+            android:background="@drawable/bg_tv_focus_pill"
             android:contentDescription="@null"
             android:padding="9dp"
             android:src="@drawable/ic_close"
-            android:tint="@color/text_primary" />
+            android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
     </LinearLayout>
 
     <View

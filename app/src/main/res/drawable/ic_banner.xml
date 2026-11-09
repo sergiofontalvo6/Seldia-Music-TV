@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Banner 320x180 para el Leanback Launcher de Android TV -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <path
+        android:fillColor="#0B0B10"
+        android:pathData="M0,0h320v180h-320z" />
+    <path
+        android:fillColor="#FF0033"
+        android:pathData="M0,0h320v180H0z"
+        android:fillAlpha="0.0" />
+    <path
+        android:fillColor="#1E1E26"
+        android:pathData="M24,52h120v76H24z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,72l36,18 -36,18z" />
+    <path
+        android:fillColor="#FF0033"
+        android:pathData="M24,52h120v6H24z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M160,68h120v10H160z"
+        android:fillAlpha="0.95" />
+    <path
+        android:fillColor="#A1A1AA"
+        android:pathData="M160,88h84v8H160z"
+        android:fillAlpha="0.9" />
+    <path
+        android:fillColor="#FF0033"
+        android:pathData="M160,110h96v26H160z" />
+</vector>

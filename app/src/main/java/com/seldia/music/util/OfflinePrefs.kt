@@ -6,13 +6,6 @@ import android.content.Context
 object OfflinePrefs {
 
     private const val PREFS = "seldia_offline_prefs"
-    private const val KEY_AUTO_DOWNLOAD = "auto_download_audio"
-
-    var autoDownloadEnabled: Boolean
-        get() = prefs?.getBoolean(KEY_AUTO_DOWNLOAD, false) ?: false
-        set(value) {
-            prefs?.edit()?.putBoolean(KEY_AUTO_DOWNLOAD, value)?.apply()
-        }
 
     private var prefs: android.content.SharedPreferences? = null
 

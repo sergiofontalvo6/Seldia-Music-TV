@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:padding="16dp">
 
             <LinearLayout
                 android:id="@+id/header_row"
@@ -33,13 +33,15 @@
 
                 <ImageButton
                     android:id="@+id/btn_close"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:background="@drawable/bg_glass_pill"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@null"
                     android:padding="8dp"
                     android:src="@drawable/ic_close"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
                 <Space
                     android:layout_width="0dp"
@@ -48,54 +50,43 @@
 
                 <ImageButton
                     android:id="@+id/btn_lyrics"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_glass_pill"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@string/lyrics_button"
                     android:padding="8dp"
                     android:src="@drawable/ic_lyrics"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
-                <ProgressBar
-                    android:id="@+id/progress_download"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:layout_marginEnd="8dp"
-                    android:indeterminateTint="?attr/accentPrimary"
-                    android:visibility="gone" />
 
-                <ImageButton
-                    android:id="@+id/btn_download"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_glass_pill"
-                    android:contentDescription="@string/download_track"
-                    android:padding="8dp"
-                    android:src="@drawable/ic_download"
-                    android:tint="@color/text_primary" />
 
                 <ImageButton
                     android:id="@+id/btn_fullscreen"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_glass_pill"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@string/fullscreen"
                     android:padding="8dp"
                     android:src="@drawable/ic_fullscreen"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
                 <ImageButton
                     android:id="@+id/btn_queue"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:background="@drawable/bg_glass_pill"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@null"
                     android:padding="8dp"
                     android:src="@drawable/ic_queue"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButtonToggleGroup
@@ -110,7 +101,7 @@
                     android:id="@+id/btn_mode_audio"
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="38dp"
+                    android:layout_height="36dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:text="@string/mode_audio"
@@ -123,7 +114,7 @@
                     android:id="@+id/btn_mode_video"
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="38dp"
+                    android:layout_height="36dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:text="@string/mode_video"
@@ -137,7 +128,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/artwork_card"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="260dp"
                 android:layout_marginTop="10dp"
                 app:cardBackgroundColor="@color/glass_card"
                 app:cardCornerRadius="24dp"
@@ -157,7 +148,7 @@
             <FrameLayout
                 android:id="@+id/video_container"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="260dp"
                 android:layout_marginTop="10dp"
                 android:background="@android:color/black"
                 android:visibility="gone">
@@ -176,13 +167,15 @@
                     android:layout_height="46dp"
                     android:layout_gravity="top|end"
                     android:layout_margin="12dp"
-                    android:background="@drawable/bg_glass_pill"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@string/fullscreen_exit"
                     android:elevation="8dp"
                     android:padding="10dp"
                     android:src="@drawable/ic_fullscreen_exit"
                     android:tint="@color/text_primary"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
             </FrameLayout>
 
             <LinearLayout
@@ -267,20 +260,24 @@
                     android:id="@+id/btn_shuffle"
                     android:layout_width="42dp"
                     android:layout_height="42dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_shuffle"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
                 <ImageButton
                     android:id="@+id/btn_prev"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginStart="6dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_prev"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
                 <ImageButton
                     android:id="@+id/btn_play_pause"
@@ -292,26 +289,32 @@
                     android:contentDescription="@null"
                     android:padding="14dp"
                     android:src="@drawable/ic_play"
-                    android:tint="@android:color/white" />
+                    android:tint="@android:color/white"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
                 <ImageButton
                     android:id="@+id/btn_next"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_next"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
 
                 <ImageButton
                     android:id="@+id/btn_repeat"
                     android:layout_width="42dp"
                     android:layout_height="42dp"
                     android:layout_marginStart="6dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/bg_tv_focus_pill"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_repeat"
-                    android:tint="@color/text_primary" />
+                    android:tint="@color/text_primary"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
             </LinearLayout>
 
             <Space

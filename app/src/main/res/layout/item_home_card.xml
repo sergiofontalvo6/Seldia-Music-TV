@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="152dp"
-    android:layout_height="120dp"
-    android:layout_marginEnd="10dp"
+    android:layout_width="160dp"
+    android:layout_height="110dp"
+    android:layout_marginEnd="14dp"
     android:clickable="true"
     android:focusable="true"
+    android:focusableInTouchMode="false"
+    android:background="@drawable/bg_tv_focus_card"
     app:cardBackgroundColor="@color/glass_card"
-    app:cardCornerRadius="22dp"
+    app:cardCornerRadius="18dp"
     app:cardElevation="0dp"
     app:rippleColor="?attr/accentSoft"
     app:strokeColor="@color/glass_stroke"
@@ -20,14 +22,14 @@
 
         <ImageView
             android:id="@+id/iv_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:layout_gravity="top|end"
-            android:layout_margin="12dp"
+            android:layout_margin="16dp"
             android:alpha="0.92"
             android:background="@drawable/bg_glass_pill"
             android:contentDescription="@null"
-            android:padding="10dp"
+            android:padding="13dp"
             android:tint="@android:color/white" />
 
         <LinearLayout
@@ -44,18 +46,18 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@android:color/white"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_subtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="#D9FFFFFF"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
         </LinearLayout>
     </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

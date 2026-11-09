@@ -17,8 +17,8 @@ android {
         applicationId "com.seldia.music"
         minSdk 27
         targetSdk 34
-        versionCode 6
-        versionName "1.0.5"
+        versionCode 7
+        versionName "1.1.0-tv"
 
         buildConfigField "String", "YOUTUBE_API_KEY", "\"${youtubeApiKey}\""
 
@@ -70,6 +70,13 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation 'androidx.fragment:fragment-ktx:1.8.2'
 
+    // Android TV / Leanback (Seldia Music TV): soporte nativo de TV
+    // La app actual usa Views + MVVM; Leanback se añade para features TV
+    // (RowsFragment, BrowseFragment, RoundedRect etc. si se quiere migrar).
+    // El lanzamiento TV ya funciona vía LEANBACK_LAUNCHER en AndroidManifest
+    // y la detección isTV en MainActivity fuerzan el layout de 3 paneles.
+    implementation 'androidx.leanback:leanback:1.1.0-alpha05'
+
     // Lifecycle + coroutines
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4'
@@ -103,4 +110,49 @@ dependencies {
 
     // Imágenes
     implementation 'io.coil-kt:coil:2.6.0'
+}
+
+// ===== Seldia Music TV: tareas Gradle para despliegue en TVs locales =====
+// Uso:
+//   gradlew :app:installTvDebug      -> compila e instala en ambas TVs
+//   gradlew :app:installTv1Debug     -> solo 192.168.100.129
+//   gradlew :app:installTv2Debug     -> solo 192.168.100.177
+// Requiere: adb en PATH y las TVs con depuración USB/Adb sobre TCP activada.
+tasks.register('installTvDebug', Exec) {
+    group = 'seldia-tv'
+    description = 'Compila APK debug e instálalo en TV1 (192.168.100.129) y TV2 (192.168.100.177). Usa scripts install_tv.* para uso interactivo.'
+    dependsOn ':app:assembleDebug'
+    def apk = layout.projectDirectory.file('build/outputs/apk/debug/app-debug.apk').asFile
+    def androidHome = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+    def adbCmd = androidHome ? "\"${androidHome}/platform-tools/adb.exe\"" : "adb"
+    commandLine 'cmd', '/c', "${adbCmd} connect 192.168.100.129 && ${adbCmd} -s 192.168.100.129:5555 install -r \"${apk.absolutePath}\" && ${adbCmd} connect 192.168.100.177 && ${adbCmd} -s 192.168.100.177:5555 install -r \"${apk.absolutePath}\""
+    standardOutput = System.out
+    errorOutput = System.err
+    ignoreExitValue = true
+}
+
+tasks.register('installTv1Debug', Exec) {
+    group = 'seldia-tv'
+    description = 'Instala APK debug en TV1 (192.168.100.129)'
+    dependsOn ':app:assembleDebug'
+    def apk = layout.projectDirectory.file('build/outputs/apk/debug/app-debug.apk').asFile
+    def androidHome = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+    def adbCmd = androidHome ? "\"${androidHome}/platform-tools/adb.exe\"" : "adb"
+    commandLine 'cmd', '/c', "${adbCmd} connect 192.168.100.129 && ${adbCmd} -s 192.168.100.129:5555 install -r \"${apk.absolutePath}\""
+    standardOutput = System.out
+    errorOutput = System.err
+    ignoreExitValue = true
+}
+
+tasks.register('installTv2Debug', Exec) {
+    group = 'seldia-tv'
+    description = 'Instala APK debug en TV2 (192.168.100.177)'
+    dependsOn ':app:assembleDebug'
+    def apk = layout.projectDirectory.file('build/outputs/apk/debug/app-debug.apk').asFile
+    def androidHome = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+    def adbCmd = androidHome ? "\"${androidHome}/platform-tools/adb.exe\"" : "adb"
+    commandLine 'cmd', '/c', "${adbCmd} connect 192.168.100.177 && ${adbCmd} -s 192.168.100.177:5555 install -r \"${apk.absolutePath}\""
+    standardOutput = System.out
+    errorOutput = System.err
+    ignoreExitValue = true
 }

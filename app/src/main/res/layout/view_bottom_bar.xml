@@ -4,13 +4,15 @@
     android:id="@+id/bottom_bar_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="10dp"
-    android:layout_marginEnd="10dp"
-    android:layout_marginBottom="8dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="12dp"
     android:clickable="true"
-    android:focusable="true"
+
+    android:clipToPadding="false"
+    android:focusable="false"
     app:cardBackgroundColor="?attr/glassPanel"
-    app:cardCornerRadius="22dp"
+    app:cardCornerRadius="26dp"
     app:cardElevation="10dp"
     app:strokeColor="?attr/glassStroke"
     app:strokeWidth="1dp">
@@ -20,10 +22,11 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="10dp"
+        android:padding="6dp"
+        android:paddingStart="12dp"
         android:paddingEnd="12dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
 
         <!-- Grupo izquierdo: pista actual -->
         <LinearLayout
@@ -34,10 +37,10 @@
             android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="46dp"
-                android:layout_height="46dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 app:cardBackgroundColor="@color/surface_high"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/glass_stroke"
                 app:strokeWidth="1dp">
@@ -53,7 +56,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="12dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -64,14 +67,14 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="@color/text_primary"
-                    android:textSize="13.5sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_artist"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
+                    android:layout_marginTop="2dp"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="@color/text_secondary"
@@ -80,21 +83,19 @@
 
             <ImageButton
                 android:id="@+id/btn_favorite"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@null"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_tv_focus_pill"
+                android:contentDescription="@string/add_favorite"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:nextFocusDown="@id/btn_play_pause"
+                android:nextFocusLeft="@id/btn_play_pause"
+                android:nextFocusRight="@+id/btn_shuffle"
+                android:nextFocusUp="@id/content_container"
                 android:src="@drawable/ic_favorite"
                 android:tint="@color/text_secondary" />
 
-            <ImageButton
-                android:id="@+id/btn_download_bottom"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/download_track"
-                android:src="@drawable/ic_download"
-                android:tint="@color/text_secondary" />
         </LinearLayout>
 
         <!-- Grupo central: controles + progreso -->
@@ -113,53 +114,91 @@
 
                 <ImageButton
                     android:id="@+id/btn_shuffle"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:padding="7dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_tv_focus_pill"
+                    android:contentDescription="@string/shuffle_all"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false"
+                    android:nextFocusDown="@+id/btn_lyrics"
+                    android:nextFocusLeft="@+id/btn_prev"
+                    android:nextFocusRight="@+id/btn_prev"
+                    android:nextFocusUp="@id/content_container"
+                    android:padding="10dp"
                     android:src="@drawable/ic_shuffle"
                     android:tint="@color/text_secondary" />
 
                 <ImageButton
                     android:id="@+id/btn_prev"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:padding="8dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_tv_focus_pill"
+                    android:contentDescription="@string/prev_track_desc"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:nextFocusDown="@+id/btn_lyrics"
+                    android:nextFocusLeft="@+id/btn_shuffle"
+                    android:nextFocusRight="@+id/btn_play_pause"
+                    android:nextFocusUp="@id/content_container"
+                    android:padding="14dp"
                     android:src="@drawable/ic_prev"
                     android:tint="@color/text_primary" />
 
                 <ImageButton
                     android:id="@+id/btn_play_pause"
-                    android:layout_width="46dp"
-                    android:layout_height="46dp"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/bg_play_button"
-                    android:contentDescription="@null"
-                    android:padding="10dp"
+                    android:contentDescription="@string/play_all"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false"
+                    android:minWidth="56dp"
+                    android:minHeight="56dp"
+                    android:nextFocusDown="@+id/btn_lyrics"
+                    android:nextFocusLeft="@+id/btn_prev"
+                    android:nextFocusRight="@+id/btn_next"
+                    android:nextFocusUp="@id/content_container"
+                    android:padding="14dp"
                     android:src="@drawable/ic_play"
                     android:tint="@android:color/white" />
 
                 <ImageButton
                     android:id="@+id/btn_next"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:padding="8dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_tv_focus_pill"
+                    android:contentDescription="@string/next_track_desc"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:nextFocusDown="@+id/btn_lyrics"
+                    android:nextFocusLeft="@+id/btn_play_pause"
+                    android:nextFocusRight="@+id/btn_repeat"
+                    android:nextFocusUp="@id/content_container"
+                    android:padding="14dp"
                     android:src="@drawable/ic_next"
                     android:tint="@color/text_primary" />
 
                 <ImageButton
                     android:id="@+id/btn_repeat"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:padding="7dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_tv_focus_pill"
+                    android:contentDescription="@string/repeat_desc"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false"
+                    android:nextFocusDown="@+id/btn_lyrics"
+                    android:nextFocusLeft="@+id/btn_next"
+                    android:nextFocusRight="@+id/btn_lyrics"
+                    android:nextFocusUp="@id/content_container"
+                    android:padding="10dp"
                     android:src="@drawable/ic_repeat"
                     android:tint="@color/text_secondary" />
             </LinearLayout>
@@ -167,7 +206,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -175,18 +214,24 @@
                     android:id="@+id/tv_position"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minWidth="30dp"
+                    android:minWidth="34dp"
                     android:text="0:00"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10.5sp" />
+                    android:textSize="11sp" />
 
                 <SeekBar
                     android:id="@+id/seek_bar"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:nextFocusDown="@+id/btn_play_pause"
+                    android:nextFocusLeft="@+id/btn_lyrics"
+                    android:nextFocusRight="@+id/btn_lyrics"
+                    android:nextFocusUp="@id/content_container"
                     android:max="1000"
                     android:progress="0"
                     android:progressTint="?attr/accentPrimary"
@@ -199,10 +244,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="end"
-                    android:minWidth="30dp"
+                    android:minWidth="34dp"
                     android:text="0:00"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10.5sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -217,29 +262,41 @@
 
             <ImageButton
                 android:id="@+id/btn_lyrics"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_tv_focus_pill"
                 android:contentDescription="@string/lyrics_button"
-                android:padding="8dp"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:nextFocusDown="@+id/volume_bar"
+                android:nextFocusLeft="@+id/btn_repeat"
+                android:nextFocusRight="@+id/btn_lyrics"
+                android:nextFocusUp="@id/content_container"
+                android:padding="10dp"
                 android:src="@drawable/ic_lyrics"
                 android:tint="@color/text_primary" />
 
             <ImageButton
                 android:id="@+id/btn_queue"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@null"
-                android:padding="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_tv_focus_pill"
+                android:contentDescription="@string/queue_desc"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:nextFocusDown="@+id/volume_bar"
+                android:nextFocusLeft="@+id/btn_lyrics"
+                android:nextFocusRight="@+id/volume_bar"
+                android:nextFocusUp="@id/content_container"
+                android:padding="10dp"
                 android:src="@drawable/ic_queue"
                 android:tint="@color/text_primary" />
 
             <ImageView
                 android:id="@+id/iv_volume_icon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_marginStart="8dp"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_volume"
@@ -247,9 +304,15 @@
 
             <SeekBar
                 android:id="@+id/volume_bar"
-                android:layout_width="84dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_width="100dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:nextFocusDown="@+id/btn_play_pause"
+                android:nextFocusLeft="@+id/btn_queue"
+                android:nextFocusRight="@+id/btn_play_pause"
+                android:nextFocusUp="@+id/btn_lyrics"
                 android:max="100"
                 android:progress="100"
                 android:progressTint="@color/text_secondary"

@@ -10,6 +10,20 @@
     <!-- OTA: abrir el instalador del sistema tras descargar el APK (Android 8+) -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- ===== Seldia Music TV: soporte Android TV / Leanback =====
+         Híbrido: funciona en móvil/tablet (LAUNCHER) y en TV (LEANBACK_LAUNCHER).
+         En TV, el layout de escritorio (sidebar fija + contenido + Sonando ahora)
+         se fuerza en MainActivity (isTV -> isDesktop). -->
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+
     <queries>
         <intent>
             <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
@@ -29,6 +43,7 @@
 
     <application
         android:name=".SeldiaApp"
+        android:banner="@drawable/ic_banner"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -41,10 +56,17 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
+            android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustPan">
+            <!-- Móvil / tablet -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Android TV (Leanback): aparece en el menú principal del TV -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
 

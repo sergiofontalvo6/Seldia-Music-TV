@@ -18,7 +18,6 @@ import com.seldia.music.SeldiaApp
 import com.seldia.music.data.model.Source
 import com.seldia.music.data.model.Track
 import com.seldia.music.databinding.FragmentQueueBinding
-import com.seldia.music.playback.DownloadFormat
 import com.seldia.music.ui.PlayerViewModel
 import com.seldia.music.ui.LibraryViewModel
 import com.seldia.music.ui.adapters.TrackTableAdapter
@@ -55,8 +54,7 @@ class QueueFragment : Fragment() {
             onFavoriteToggle = { libraryVm.toggleFavorite(it) },
             onAddToQueue = {},
             onAddToPlaylist = {},
-            onRemove = { _, index -> playerVm.removeFromQueue(index) },
-            onDownload = ::downloadTrack
+            onRemove = { _, index -> playerVm.removeFromQueue(index) }
         )
         binding.recycler.adapter = adapter
         observeTrackStates()
@@ -104,46 +102,12 @@ class QueueFragment : Fragment() {
         }
     }
 
-    /**
-     * La cola usa el mismo estado global que el resto de listas: favoritos y
-     * descargas vienen de Room y la descarga en curso de MediaDownloadManager.
-     */
     private fun observeTrackStates() {
         libraryVm.favorites.observe(viewLifecycleOwner) { favorites ->
             adapter.updateFavorites(favorites.map { it.key }.toSet())
         }
-        libraryVm.downloadedKeys.observe(viewLifecycleOwner) { keys ->
-            adapter.updateDownloadedKeys(keys)
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                container.mediaDownloadManager.downloadStates.collect { states ->
-                    adapter.updateDownloadStates(states)
-                }
-            }
-        }
     }
 
-    private fun downloadTrack(track: Track) {
-        if (track.source == Source.LOCAL) {
-            Toast.makeText(requireContext(), R.string.download_already_local, Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (!container.networkConnectivityManager.isCurrentlyOnline()) {
-            Toast.makeText(requireContext(), R.string.download_offline_blocked, Toast.LENGTH_SHORT).show()
-            return
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            val already = runCatching {
-                container.libraryRepository.findDownloadedUri(track.key)
-            }.getOrNull()
-            if (already != null) {
-                Toast.makeText(requireContext(), R.string.download_already_local, Toast.LENGTH_SHORT).show()
-            } else {
-                container.mediaDownloadManager.download(track, DownloadFormat.AUDIO)
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
