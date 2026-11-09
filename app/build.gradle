@@ -17,8 +17,8 @@ android {
         applicationId "com.seldia.music"
         minSdk 27
         targetSdk 34
-        versionCode 7
-        versionName "1.1.0-tv"
+        versionCode 8
+        versionName "1.1.1-tv"
 
         buildConfigField "String", "YOUTUBE_API_KEY", "\"${youtubeApiKey}\""
 

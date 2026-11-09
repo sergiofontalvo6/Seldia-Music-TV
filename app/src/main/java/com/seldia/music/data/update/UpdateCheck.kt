@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Actualización OTA conectada a GitHub Releases.
  *
- * Endpoint: `GET https://api.github.com/repos/sergiofontalvo6/SeldiaMusic/releases/latest`
+ * Endpoint: `GET https://api.github.com/repos/sergiofontalvo6/Seldia-Music-TV/releases/latest`
  * (público, sin token). Parsea `tag_name` y el asset `.apk` (`browser_download_url`),
  * compara contra `BuildConfig.VERSION_NAME`, descarga el APK con OkHttp al
  * almacenamiento temporal de la app (`cacheDir/updates/`) y abre el instalador
@@ -27,7 +27,7 @@ object UpdateCheck {
 
     private const val TAG = "Update"
     const val LATEST_RELEASE_URL =
-        "https://api.github.com/repos/sergiofontalvo6/SeldiaMusic/releases/latest"
+        "https://api.github.com/repos/sergiofontalvo6/Seldia-Music-TV/releases/latest"
 
     data class ReleaseInfo(
         val version: String,
