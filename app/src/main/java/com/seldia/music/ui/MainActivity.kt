@@ -747,6 +747,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun updatePlaybackUi(s: PlayerState) {
+        // TV: pantalla siempre encendida mientras suena (anti apagado inactivo)
+        if (s.isPlaying) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val bar = bottomBarBinding
         val track = s.currentTrack
 

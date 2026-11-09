@@ -164,6 +164,8 @@ class MusicPlayer(
                 .build(),
             true
         )
+        // Evita que el TV se duerma (pantalla/CPU) y corte la música al reproducir.
+        setWakeMode(C.WAKE_MODE_NETWORK)
         addListener(playerListener)
     }
 
